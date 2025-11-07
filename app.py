@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify, request
 from flask_mysqldb import MySQL
 import decimal
 import json
+import MySQLdb
 
 # Helper to convert Decimal to JSON serializable
 class DecimalEncoder(json.JSONEncoder):
@@ -15,6 +16,15 @@ app = Flask(__name__, template_folder='template', static_folder='static')
 app.config.from_object('config.Config')
 
 mysql = MySQL(app)
+
+# Initialize MySQL connection
+def get_db_connection():
+    return MySQLdb.connect(
+        host='localhost',
+        user='root',
+        password='sagar123',
+        database='ngo_management_system'
+    )
 
 @app.route('/')
 def dashboard():
@@ -43,7 +53,8 @@ def analytics():
 # ---------- API ROUTES (Backend Data) ----------
 @app.route('/api/summary')
 def api_summary():
-    cur = mysql.connection.cursor()
+    conn = get_db_connection()
+    cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM volunteer WHERE status='Active'")
     active_volunteers = cur.fetchone()[0]
 
@@ -54,6 +65,7 @@ def api_summary():
     total_donations = cur.fetchone()[0] or 0
 
     cur.close()
+    conn.close()
     return jsonify({
         "active_volunteers": int(active_volunteers),
         "total_projects": int(total_projects),
@@ -62,27 +74,33 @@ def api_summary():
 
 @app.route('/api/volunteers')
 def api_volunteers():
-    cur = mysql.connection.cursor()
+    conn = get_db_connection()
+    cur = conn.cursor()
     cur.execute("SELECT volunteer_id, full_name, email, phone, status, join_date FROM volunteer ORDER BY join_date DESC LIMIT 100")
     rows = cur.fetchall()
     cur.close()
+    conn.close()
     return jsonify(rows)
 
 @app.route('/api/projects')
 def api_projects():
-    cur = mysql.connection.cursor()
+    conn = get_db_connection()
+    cur = conn.cursor()
     cur.execute("SELECT event_id AS project_id, event_name AS name, event_date AS start_date, location, description FROM event ORDER BY event_date DESC LIMIT 100")
     rows = cur.fetchall()
     cur.close()
+    conn.close()
     return jsonify(rows)
 
 @app.route('/api/donations')
 def api_donations():
-    cur = mysql.connection.cursor()
+    conn = get_db_connection()
+    cur = conn.cursor()
     cur.execute("""SELECT donation_id, donor_id, amount, donation_type, donation_date, notes
                    FROM donation ORDER BY donation_date DESC LIMIT 100""")
     rows = cur.fetchall()
     cur.close()
+    conn.close()
     return json.loads(json.dumps(rows, cls=DecimalEncoder))
 
 @app.route('/api/analytics/donations_trend')
@@ -90,9 +108,10 @@ def api_donations_trend():
     """
     Simple donations by month (last 6 months).
     """
-    cur = mysql.connection.cursor()
+    conn = get_db_connection()
+    cur = conn.cursor()
     cur.execute("""
-        SELECT DATE_FORMAT(donation_date, '%%Y-%%m') AS month, 
+        SELECT DATE_FORMAT(donation_date, '%%Y-%%m') AS month,
                IFNULL(SUM(amount),0) AS total
         FROM donation
         WHERE donation_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
@@ -101,6 +120,7 @@ def api_donations_trend():
     """)
     rows = cur.fetchall()
     cur.close()
+    conn.close()
     # Ensure sequential months - frontend can handle missing months, but we'll return rows
     return json.loads(json.dumps(rows, cls=DecimalEncoder))
 
@@ -108,7 +128,8 @@ def api_donations_trend():
 @app.route('/api/search/stakeholders')
 def api_search_stakeholders():
     q = request.args.get('q', '')
-    cur = mysql.connection.cursor()
+    conn = get_db_connection()
+    cur = conn.cursor()
     likeq = f"%{q}%"
     cur.execute("""
         SELECT 'volunteer' AS type, volunteer_id AS id, full_name AS name, email, phone
@@ -122,6 +143,7 @@ def api_search_stakeholders():
     """, (likeq, likeq, likeq, likeq))
     rows = cur.fetchall()
     cur.close()
+    conn.close()
     return jsonify(rows)
 
 # API endpoint to add stakeholder
@@ -136,7 +158,8 @@ def api_add_stakeholder():
         status = data.get('status', 'Active')
         join_date = data.get('join_date')
 
-        cur = mysql.connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
 
         if stakeholder_type == 'volunteer':
             # Insert into volunteer table
@@ -158,15 +181,18 @@ def api_add_stakeholder():
                 VALUES (%s, %s, %s, 'Active', CURDATE())
             """, (full_name, email, phone))
         else:
+            conn.close()
             return jsonify({"success": False, "message": "Invalid stakeholder type"}), 400
 
-        mysql.connection.commit()
+        conn.commit()
         cur.close()
+        conn.close()
 
         return jsonify({"success": True, "message": "Stakeholder added successfully"})
 
     except Exception as e:
-        mysql.connection.rollback()
+        conn.rollback()
+        conn.close()
         return jsonify({"success": False, "message": str(e)}), 500
 
 # Error handler
