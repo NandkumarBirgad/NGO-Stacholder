@@ -59,3 +59,9 @@ function renderDonationChart(labels, data) {
     }
   });
 }
+
+// Function to close the stakeholder form modal
+function closeForm() {
+  document.getElementById('addStakeholderModal').style.display = 'none';
+  document.getElementById('stakeholderForm').reset();
+}

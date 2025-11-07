@@ -44,49 +44,72 @@
 
 <!-- Modal for Add Stakeholder Form -->
 <div id="addStakeholderModal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <span class="close" onclick="closeAddStakeholderForm()">&times;</span>
-    <h2>Add New Stakeholder</h2>
-    <form id="addStakeholderForm">
-      <div class="form-group">
-        <label for="stakeholderType">Type:</label>
-        <select id="stakeholderType" name="type" required>
-          <option value="">Select Type</option>
-          <option value="volunteer">Volunteer</option>
-          <option value="donor">Donor</option>
-          <option value="beneficiary">Beneficiary</option>
-        </select>
+  <div class="form-container">
+    <header class="form-header">
+      <h2>Add New Stakeholder</h2>
+      <button class="close-btn" onclick="closeForm()">×</button>
+    </header>
+
+    <form id="stakeholderForm">
+      <div class="form-row full-width">
+        <label for="fullName">Full Name *</label>
+        <input type="text" id="fullName" name="fullName" required>
       </div>
 
-      <div class="form-group">
-        <label for="fullName">Full Name:</label>
-        <input type="text" id="fullName" name="full_name" required>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email">
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="type">Type *</label>
+          <select id="type" name="type" required>
+            <option value="volunteer">Volunteer</option>
+            <option value="donor">Donor</option>
+            <option value="partner">Partner</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="phone">Phone:</label>
-        <input type="tel" id="phone" name="phone">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" id="city" name="city">
+        </div>
+        <div class="form-group">
+          <label for="joinedDate">Joined Date</label>
+          <input type="date" id="joinedDate" name="joinedDate" value="2025-11-07">
+        </div>
       </div>
 
-      <div class="form-group" id="statusGroup" style="display:none;">
-        <label for="status">Status:</label>
-        <select id="status" name="status">
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
+      <div class="form-row full-width">
+        <label for="address">Address</label>
+        <textarea id="address" name="address"></textarea>
       </div>
 
-      <div class="form-group" id="joinDateGroup" style="display:none;">
-        <label for="joinDate">Join Date:</label>
-        <input type="date" id="joinDate" name="join_date">
+      <div class="form-row full-width">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" rows="4"></textarea>
       </div>
 
-      <button type="submit" class="add-btn">Add Stakeholder</button>
+      <div class="form-actions">
+        <button type="button" class="btn cancel-btn" onclick="closeForm()">Cancel</button>
+        <button type="submit" class="btn create-btn">Create</button>
+      </div>
     </form>
   </div>
 </div>
@@ -117,7 +140,7 @@
   });
 
   // Handle form submission
-  document.getElementById('addStakeholderForm').addEventListener('submit', function(e) {
+  document.getElementById('stakeholderForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
     const formData = new FormData(this);
@@ -134,7 +157,7 @@
     .then(result => {
       if (result.success) {
         alert('Stakeholder added successfully!');
-        closeAddStakeholderForm();
+        closeForm();
         // Refresh the stakeholders list
         loadStakeholders();
       } else {
@@ -159,7 +182,7 @@
           tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">No stakeholders found</td></tr>';
           return;
         }
-        tbody.innerHTML = data.map(item => 
+        tbody.innerHTML = data.map(item =>
           `<tr>
             <td>${item.name}</td>
             <td>${item.type}</td>
@@ -171,7 +194,7 @@
 
   // Load stakeholders on page load
   function loadStakeholders() {
-    fetch('/api/volunteers')
+    fetch('/api/stakeholders')
       .then(r => r.json())
       .then(data => {
         const tbody = document.querySelector('#stakeholdersTable tbody');
@@ -179,12 +202,12 @@
           tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">No stakeholders found</td></tr>';
           return;
         }
-        tbody.innerHTML = data.map(item => 
+        tbody.innerHTML = data.map(item =>
           `<tr>
             <td>${item.full_name}</td>
-            <td>Volunteer</td>
+            <td>${item.type}</td>
             <td>${item.email || item.phone || ''}</td>
-            <td>${item.status}</td>
+            <td>${item.status || 'Active'}</td>
           </tr>`).join('');
       });
   }

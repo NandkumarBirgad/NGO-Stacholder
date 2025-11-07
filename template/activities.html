@@ -6,7 +6,7 @@
     <div class="subtitle">Track events, volunteer sessions, and other activities</div>
   </div>
   <div>
-    <button class="add-btn" onclick="alert('New Activity form')">+ New Activity</button>
+    <button class="add-btn" onclick="showAddActivityForm()">+ New Activity</button>
   </div>
 </div>
 
@@ -16,6 +16,180 @@
     <select><option>All Types</option></select>
   </div>
 
-  <div class="empty-box" style="height:150px;">No activities found<br><small style="color:var(--muted)">Create your first activity to get started</small></div>
+  <div class="table">
+    <table id="activitiesTable">
+      <thead>
+        <tr>
+          <th>Activity Name</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Volunteers</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Filled by client if we build list -->
+        <tr><td colspan="5" style="text-align:center; color:var(--muted);">No activities found</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
+
+<!-- Modal for Add New Activity Form -->
+<div id="addActivityModal" class="modal" style="display:none;">
+  <div class="form-container">
+    <header class="form-header">
+      <h2>Create New Activity</h2>
+      <button class="close-btn" onclick="closeActivityForm()">×</button>
+    </header>
+
+    <form id="activityForm">
+      <div class="form-row full-width">
+        <label for="activityName">Activity Name *</label>
+        <input type="text" id="activityName" name="activityName" required>
+      </div>
+
+      <div class="form-row full-width">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="activityType">Activity Type *</label>
+          <select id="activityType" name="activityType" required>
+            <option value="Event">Event</option>
+            <option value="Workshop">Workshop</option>
+            <option value="Volunteer Session">Volunteer Session</option>
+            <option value="Fundraising">Fundraising</option>
+            <option value="Community Outreach">Community Outreach</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="Planning">Planning</option>
+            <option value="Active">Active</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate">Start Date *</label>
+          <input type="date" id="startDate" name="startDate" required>
+        </div>
+        <div class="form-group">
+          <label for="endDate">End Date</label>
+          <input type="date" id="endDate" name="endDate">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input type="text" id="location" name="location">
+        </div>
+        <div class="form-group">
+          <label for="expectedAttendees">Expected Attendees</label>
+          <input type="number" id="expectedAttendees" name="expectedAttendees" value="0" min="0">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="budget">Budget ($)</label>
+          <input type="number" id="budget" name="budget" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label for="volunteersNeeded">Volunteers Needed</label>
+          <input type="number" id="volunteersNeeded" name="volunteersNeeded" value="0" min="0">
+        </div>
+      </div>
+
+      <div class="form-row full-width">
+        <label for="organizer">Organizer</label>
+        <input type="text" id="organizer" name="organizer">
+      </div>
+
+      <div class="form-row full-width">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" rows="3"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn cancel-btn" onclick="closeActivityForm()">Cancel</button>
+        <button type="submit" class="btn create-btn">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function showAddActivityForm() {
+    document.getElementById('addActivityModal').style.display = 'block';
+  }
+
+  function closeActivityForm() {
+    document.getElementById('addActivityModal').style.display = 'none';
+    document.getElementById('activityForm').reset();
+  }
+
+  // Handle form submission
+  document.getElementById('activityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+
+    fetch('/api/add_activity', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        alert('Activity added successfully!');
+        closeActivityForm();
+        // Refresh the activities list
+        loadActivities();
+      } else {
+        alert('Error adding activity: ' + result.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error adding activity');
+    });
+  });
+
+  // Load activities on page load
+  function loadActivities() {
+    fetch('/api/activities')
+      .then(r => r.json())
+      .then(data => {
+        const tbody = document.querySelector('#activitiesTable tbody');
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">No activities found</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.map(item =>
+          `<tr>
+            <td>${item.name}</td>
+            <td>${item.type || 'N/A'}</td>
+            <td>${item.start_date || 'N/A'}</td>
+            <td>${item.location || 'N/A'}</td>
+            <td>${item.volunteers_needed || 0}</td>
+          </tr>`).join('');
+      });
+  }
+
+  // Load activities when page loads
+  document.addEventListener('DOMContentLoaded', loadActivities);
+</script>
 {% endblock %}

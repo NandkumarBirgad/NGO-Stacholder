@@ -6,7 +6,7 @@
     <div class="subtitle">Track and manage financial contributions</div>
   </div>
   <div>
-    <button class="add-btn" onclick="alert('Record donation')">+ Record Donation</button>
+    <button class="add-btn" onclick="showAddDonationForm()">+ Record Donation</button>
   </div>
 </div>
 
@@ -25,26 +25,189 @@
   <div class="empty-box">No donations recorded</div>
 </div>
 
-<script>
-  // load donations summary
-  fetch('/api/donations')
-    .then(r => r.json())
-    .then(list => {
-      const container = document.getElementById('donationList');
-      if (!list.length) {
-        container.innerHTML = '<div class="empty-box">No donations recorded</div>';
-        return;
-      }
-      // simple card list
-      container.innerHTML = list.map(d => `
-        <div style="background:white;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 6px 14px rgba(12,24,40,0.04);display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="font-weight:700">${d.donation_type || 'Donation'}</div>
-            <div style="color:var(--muted);font-size:13px">${d.donation_date} • ${d.notes || ''}</div>
-          </div>
-          <div style="font-weight:800;color:#10b981;">$${(d.amount||0).toFixed(2)}</div>
+<!-- Modal for Record New Donation Form -->
+<div id="addDonationModal" class="modal" style="display:none;">
+  <div class="form-container">
+    <header class="form-header">
+      <h2>Record New Donation</h2>
+      <button class="close-btn" onclick="closeDonationForm()">×</button>
+    </header>
+
+    <form id="donationForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="donorName">Donor Name *</label>
+          <select id="donorName" name="donorName" required>
+            <option value="">Select donor</option>
+            <!-- Options will be populated by JavaScript -->
+          </select>
         </div>
-      `).join('');
+        <div class="form-group">
+          <label for="amount">Amount *</label>
+          <input type="number" id="amount" name="amount" value="0" min="0" step="0.01" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="date">Date *</label>
+          <input type="date" id="date" name="date" required>
+        </div>
+        <div class="form-group">
+          <label for="paymentMethod">Payment Method</label>
+          <select id="paymentMethod" name="paymentMethod">
+            <option value="Online">Online</option>
+            <option value="Cash">Cash</option>
+            <option value="Cheque">Cheque</option>
+            <option value="BankTransfer">Bank Transfer</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" name="category">
+            <option value="General">General</option>
+            <option value="Specific">Specific Fund</option>
+            <option value="Capital">Capital Campaign</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="project">Project (Optional)</label>
+          <select id="project" name="project">
+            <option value="">Select project</option>
+            <!-- Options will be populated by JavaScript -->
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row full-width">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" rows="4"></textarea>
+      </div>
+
+      <div class="checkbox-group">
+        <div class="checkbox-item">
+          <input type="checkbox" id="recurring" name="recurring">
+          <label for="recurring">Recurring Donation</label>
+        </div>
+        <div class="checkbox-item">
+          <input type="checkbox" id="taxReceipt" name="taxReceipt">
+          <label for="taxReceipt">Tax Receipt Sent</label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn cancel-btn" onclick="closeDonationForm()">Cancel</button>
+        <button type="submit" class="btn record-btn">Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function showAddDonationForm() {
+    document.getElementById('addDonationModal').style.display = 'block';
+    loadDonors();
+    loadProjects();
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+  }
+
+  function closeDonationForm() {
+    document.getElementById('addDonationModal').style.display = 'none';
+    document.getElementById('donationForm').reset();
+  }
+
+  function loadDonors() {
+    fetch('/api/stakeholders')
+      .then(r => r.json())
+      .then(data => {
+        const select = document.getElementById('donorName');
+        select.innerHTML = '<option value="">Select donor</option>';
+        data.forEach(donor => {
+          if (donor.type === 'donor') {
+            const option = document.createElement('option');
+            option.value = donor.id;
+            option.textContent = donor.full_name;
+            select.appendChild(option);
+          }
+        });
+      });
+  }
+
+  function loadProjects() {
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(data => {
+        const select = document.getElementById('project');
+        select.innerHTML = '<option value="">Select project</option>';
+        data.forEach(project => {
+          const option = document.createElement('option');
+          option.value = project.project_id;
+          option.textContent = project.name;
+          select.appendChild(option);
+        });
+      });
+  }
+
+  // Handle form submission
+  document.getElementById('donationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+
+    fetch('/api/add_donation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        alert('Donation recorded successfully!');
+        closeDonationForm();
+        // Refresh the donations list
+        loadDonations();
+      } else {
+        alert('Error recording donation: ' + result.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error recording donation');
     });
+  });
+
+  // Load donations summary and list
+  function loadDonations() {
+    fetch('/api/donations')
+      .then(r => r.json())
+      .then(list => {
+        const container = document.getElementById('donationList');
+        if (!list.length) {
+          container.innerHTML = '<div class="empty-box">No donations recorded</div>';
+          return;
+        }
+        // simple card list
+        container.innerHTML = list.map(d => `
+          <div style="background:white;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 6px 14px rgba(12,24,40,0.04);display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-weight:700">${d.donation_type || 'Donation'}</div>
+              <div style="color:var(--muted);font-size:13px">${d.donation_date} • ${d.notes || ''}</div>
+            </div>
+            <div style="font-weight:800;color:#10b981;">$${(d.amount||0).toFixed(2)}</div>
+          </div>
+        `).join('');
+      });
+  }
+
+  // Load donations on page load
+  document.addEventListener('DOMContentLoaded', loadDonations);
 </script>
 {% endblock %}

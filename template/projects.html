@@ -6,7 +6,7 @@
     <div class="subtitle">Manage your NGO programs and initiatives</div>
   </div>
   <div>
-    <button class="add-btn" onclick="alert('New Project form')">+ New Project</button>
+    <button class="add-btn" onclick="showAddProjectForm()">+ New Project</button>
   </div>
 </div>
 
@@ -17,6 +17,174 @@
     </select>
   </div>
 
-  <div class="empty-box" style="height:160px;">No projects found<br><small style="color:var(--muted)">Create your first project to get started</small></div>
+  <div class="table">
+    <table id="projectsTable">
+      <thead>
+        <tr>
+          <th>Project Name</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Start Date</th>
+          <th>Budget</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Filled by client if we build list -->
+        <tr><td colspan="5" style="text-align:center; color:var(--muted);">No projects found</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
+
+<!-- Modal for Add New Project Form -->
+<div id="addProjectModal" class="modal" style="display:none;">
+  <div class="form-container">
+    <header class="form-header">
+      <h2>Create New Project</h2>
+      <button class="close-btn" onclick="closeProjectForm()">×</button>
+    </header>
+
+    <form id="projectForm">
+      <div class="form-row full-width">
+        <label for="projectName">Project Name *</label>
+        <input type="text" id="projectName" name="projectName" required>
+      </div>
+
+      <div class="form-row full-width">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="category">Category *</label>
+          <select id="category" name="category" required>
+            <option value="Education">Education</option>
+            <option value="Health">Health</option>
+            <option value="Environment">Environment</option>
+            <option value="Community">Community</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="Planning">Planning</option>
+            <option value="Active">Active</option>
+            <option value="Completed">Completed</option>
+            <option value="On Hold">On Hold</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate">Start Date</label>
+          <input type="date" id="startDate" name="startDate">
+        </div>
+        <div class="form-group">
+          <label for="endDate">End Date</label>
+          <input type="date" id="endDate" name="endDate">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="budget">Budget ($)</label>
+          <input type="number" id="budget" name="budget" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label for="targetBeneficiaries">Target Beneficiaries</label>
+          <input type="number" id="targetBeneficiaries" name="targetBeneficiaries" value="0" min="0">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="volunteersNeeded">Volunteers Needed</label>
+          <input type="number" id="volunteersNeeded" name="volunteersNeeded" value="0" min="0">
+        </div>
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input type="text" id="location" name="location">
+        </div>
+      </div>
+
+      <div class="form-row full-width">
+        <label for="projectManager">Project Manager</label>
+        <input type="text" id="projectManager" name="projectManager">
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn cancel-btn" onclick="closeProjectForm()">Cancel</button>
+        <button type="submit" class="btn create-btn">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function showAddProjectForm() {
+    document.getElementById('addProjectModal').style.display = 'block';
+  }
+
+  function closeProjectForm() {
+    document.getElementById('addProjectModal').style.display = 'none';
+    document.getElementById('projectForm').reset();
+  }
+
+  // Handle form submission
+  document.getElementById('projectForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+
+    fetch('/api/add_project', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        alert('Project added successfully!');
+        closeProjectForm();
+        // Refresh the projects list
+        loadProjects();
+      } else {
+        alert('Error adding project: ' + result.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error adding project');
+    });
+  });
+
+  // Load projects on page load
+  function loadProjects() {
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(data => {
+        const tbody = document.querySelector('#projectsTable tbody');
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">No projects found</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.map(item =>
+          `<tr>
+            <td>${item.name}</td>
+            <td>${item.category || 'N/A'}</td>
+            <td>${item.status || 'Planning'}</td>
+            <td>${item.start_date || 'N/A'}</td>
+            <td>$${item.budget || 0}</td>
+          </tr>`).join('');
+      });
+  }
+
+  // Load projects when page loads
+  document.addEventListener('DOMContentLoaded', loadProjects);
+</script>
 {% endblock %}

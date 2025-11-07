@@ -35,7 +35,8 @@ CREATE TABLE volunteer (
     address TEXT,
     skills VARCHAR(255),
     join_date DATE DEFAULT (CURDATE()),
-    status ENUM('Active', 'Inactive') DEFAULT 'Active'
+    status ENUM('Active', 'Inactive') DEFAULT 'Active',
+    uri VARCHAR(255)
 );
 
 
@@ -49,7 +50,8 @@ CREATE TABLE donor (
     phone VARCHAR(15),
     organization_name VARCHAR(100),
     address TEXT,
-    total_donations DECIMAL(12,2) DEFAULT 0
+    total_donations DECIMAL(12,2) DEFAULT 0,
+    uri VARCHAR(255)
 );
 
 -- ==========================================================
@@ -60,9 +62,12 @@ CREATE TABLE beneficiary (
     full_name VARCHAR(100) NOT NULL,
     gender ENUM('Male', 'Female', 'Other'),
     age INT,
+    email VARCHAR(100),
+    phone VARCHAR(15),
     address TEXT,
     need_description TEXT,
-    status ENUM('Active', 'Completed', 'Pending') DEFAULT 'Active'
+    status ENUM('Active', 'Completed', 'Pending') DEFAULT 'Active',
+    uri VARCHAR(255)
 );
 
 -- ==========================================================
