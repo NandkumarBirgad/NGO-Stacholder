@@ -6,7 +6,7 @@
     <div class="subtitle">Manage volunteers, donors, beneficiaries, and partners</div>
   </div>
   <div>
-    <button class="add-btn" onclick="alert('Add stakeholder flow - implement form')">+ Add Stakeholder</button>
+    <button class="add-btn" onclick="showAddStakeholderForm()">+ Add Stakeholder</button>
   </div>
 </div>
 
@@ -42,7 +42,111 @@
   </table>
 </div>
 
+<!-- Modal for Add Stakeholder Form -->
+<div id="addStakeholderModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close" onclick="closeAddStakeholderForm()">&times;</span>
+    <h2>Add New Stakeholder</h2>
+    <form id="addStakeholderForm">
+      <div class="form-group">
+        <label for="stakeholderType">Type:</label>
+        <select id="stakeholderType" name="type" required>
+          <option value="">Select Type</option>
+          <option value="volunteer">Volunteer</option>
+          <option value="donor">Donor</option>
+          <option value="beneficiary">Beneficiary</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="fullName">Full Name:</label>
+        <input type="text" id="fullName" name="full_name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email">
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" name="phone">
+      </div>
+
+      <div class="form-group" id="statusGroup" style="display:none;">
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="joinDateGroup" style="display:none;">
+        <label for="joinDate">Join Date:</label>
+        <input type="date" id="joinDate" name="join_date">
+      </div>
+
+      <button type="submit" class="add-btn">Add Stakeholder</button>
+    </form>
+  </div>
+</div>
+
 <script>
+  function showAddStakeholderForm() {
+    document.getElementById('addStakeholderModal').style.display = 'block';
+  }
+
+  function closeAddStakeholderForm() {
+    document.getElementById('addStakeholderModal').style.display = 'none';
+    document.getElementById('addStakeholderForm').reset();
+  }
+
+  // Show/hide fields based on stakeholder type
+  document.getElementById('stakeholderType').addEventListener('change', function(e) {
+    const type = e.target.value;
+    const statusGroup = document.getElementById('statusGroup');
+    const joinDateGroup = document.getElementById('joinDateGroup');
+
+    if (type === 'volunteer') {
+      statusGroup.style.display = 'block';
+      joinDateGroup.style.display = 'block';
+    } else {
+      statusGroup.style.display = 'none';
+      joinDateGroup.style.display = 'none';
+    }
+  });
+
+  // Handle form submission
+  document.getElementById('addStakeholderForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+
+    fetch('/api/add_stakeholder', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        alert('Stakeholder added successfully!');
+        closeAddStakeholderForm();
+        // Refresh the stakeholders list
+        loadStakeholders();
+      } else {
+        alert('Error adding stakeholder: ' + result.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error adding stakeholder');
+    });
+  });
+
   // Basic search hook (optional): call /api/search/stakeholders?q=...
   document.getElementById('stakeSearch').addEventListener('input', function(e){
     const q = e.target.value.trim();
@@ -64,5 +168,28 @@
           </tr>`).join('');
       });
   });
+
+  // Load stakeholders on page load
+  function loadStakeholders() {
+    fetch('/api/volunteers')
+      .then(r => r.json())
+      .then(data => {
+        const tbody = document.querySelector('#stakeholdersTable tbody');
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">No stakeholders found</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.map(item => 
+          `<tr>
+            <td>${item.full_name}</td>
+            <td>Volunteer</td>
+            <td>${item.email || item.phone || ''}</td>
+            <td>${item.status}</td>
+          </tr>`).join('');
+      });
+  }
+
+  // Load stakeholders when page loads
+  document.addEventListener('DOMContentLoaded', loadStakeholders);
 </script>
 {% endblock %}

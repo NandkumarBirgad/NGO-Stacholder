@@ -124,6 +124,51 @@ def api_search_stakeholders():
     cur.close()
     return jsonify(rows)
 
+# API endpoint to add stakeholder
+@app.route('/api/add_stakeholder', methods=['POST'])
+def api_add_stakeholder():
+    try:
+        data = request.get_json()
+        stakeholder_type = data.get('type')
+        full_name = data.get('full_name')
+        email = data.get('email')
+        phone = data.get('phone')
+        status = data.get('status', 'Active')
+        join_date = data.get('join_date')
+
+        cur = mysql.connection.cursor()
+
+        if stakeholder_type == 'volunteer':
+            # Insert into volunteer table
+            cur.execute("""
+                INSERT INTO volunteer (full_name, email, phone, status, join_date)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (full_name, email, phone, status, join_date))
+        elif stakeholder_type == 'donor':
+            # Insert into donor table
+            cur.execute("""
+                INSERT INTO donor (full_name, email, phone)
+                VALUES (%s, %s, %s)
+            """, (full_name, email, phone))
+        elif stakeholder_type == 'beneficiary':
+            # For beneficiary, we might need a separate table or handle differently
+            # For now, we'll treat it as a volunteer
+            cur.execute("""
+                INSERT INTO volunteer (full_name, email, phone, status, join_date)
+                VALUES (%s, %s, %s, 'Active', CURDATE())
+            """, (full_name, email, phone))
+        else:
+            return jsonify({"success": False, "message": "Invalid stakeholder type"}), 400
+
+        mysql.connection.commit()
+        cur.close()
+
+        return jsonify({"success": True, "message": "Stakeholder added successfully"})
+
+    except Exception as e:
+        mysql.connection.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
 # Error handler
 @app.errorhandler(500)
 def internal_error(error):
