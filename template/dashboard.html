@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>Dashboard</h1>
+    <div class="subtitle">Welcome back! Here's what's happening with your organization.</div>
+  </div>
+  <div>
+    <button class="add-btn" onclick="location.href='/activities'">+ New Activity</button>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <h3>Active Volunteers</h3>
+    <p id="activeVolunteers">0</p>
+    <small style="color:var(--muted);">0 total stakeholders</small>
+  </div>
+
+  <div class="card">
+    <h3>Active Projects</h3>
+    <p id="activeProjects">0</p>
+    <small style="color:var(--muted);">0 total projects</small>
+  </div>
+
+  <div class="card">
+    <h3>Total Donations</h3>
+    <p id="totalDonations">$0</p>
+    <small style="color:var(--muted);">0 contributions</small>
+  </div>
+
+  <div class="card">
+    <h3>Volunteer Hours</h3>
+    <p id="volHours">0</p>
+    <small style="color:var(--muted);">Total hours contributed</small>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3>Recent Activities</h3>
+    <div class="empty-box" style="height:140px;">No recent activities</div>
+  </div>
+
+  <div class="card">
+    <h3>Active Projects</h3>
+    <div class="empty-box" style="height:140px;">No active projects</div>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <h3>Stakeholders</h3>
+    <p style="font-size:18px;">Manage volunteers, donors and beneficiaries</p>
+  </div>
+  <div class="card">
+    <h3>Projects</h3>
+    <p style="font-size:18px;">Track programs and initiatives</p>
+  </div>
+  <div class="card">
+    <h3>Donations</h3>
+    <p style="font-size:18px;">Receive and record donations</p>
+  </div>
+</div>
+{% endblock %}

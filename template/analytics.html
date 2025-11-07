@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>Analytics & Insights</h1>
+    <div class="subtitle">Comprehensive data analysis and reporting</div>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card"><h3>Total Stakeholders</h3><p id="totalStakeholders">0</p></div>
+  <div class="card"><h3>Total Donations</h3><p id="analyticsTotalDonations">$0</p></div>
+  <div class="card"><h3>Volunteer Hours</h3><p id="analyticsVolHours">0</p></div>
+  <div class="card"><h3>Avg Donation</h3><p id="analyticsAvgDonation">$0</p></div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3>Stakeholder Distribution</h3>
+    <div class="empty-box" style="height:200px;">(pie chart placeholder)</div>
+  </div>
+  <div class="card">
+    <h3>Project Categories</h3>
+    <div class="empty-box" style="height:200px;">(bar chart placeholder)</div>
+  </div>
+</div>
+
+<div class="card" style="padding:18px;">
+  <h3>Donation Trends (Last 6 Months)</h3>
+  <canvas id="donationTrend" height="160"></canvas>
+</div>
+{% endblock %}

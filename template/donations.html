@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>Donations</h1>
+    <div class="subtitle">Track and manage financial contributions</div>
+  </div>
+  <div>
+    <button class="add-btn" onclick="alert('Record donation')">+ Record Donation</button>
+  </div>
+</div>
+
+<div class="cards" style="margin-top:8px;">
+  <div class="card"><h3>Total Raised</h3><p id="totalRaised">$0</p></div>
+  <div class="card"><h3>This Month</h3><p id="thisMonth">$0</p></div>
+  <div class="card"><h3>Total Donations</h3><p id="countDonations">0</p></div>
+</div>
+
+<div class="search-row" style="margin-top:14px;">
+  <input type="search" id="donorSearch" placeholder="Search by donor name..." />
+</div>
+
+<div class="table" id="donationList">
+  <!-- fetch and list donations -->
+  <div class="empty-box">No donations recorded</div>
+</div>
+
+<script>
+  // load donations summary
+  fetch('/api/donations')
+    .then(r => r.json())
+    .then(list => {
+      const container = document.getElementById('donationList');
+      if (!list.length) {
+        container.innerHTML = '<div class="empty-box">No donations recorded</div>';
+        return;
+      }
+      // simple card list
+      container.innerHTML = list.map(d => `
+        <div style="background:white;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 6px 14px rgba(12,24,40,0.04);display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700">${d.donation_type || 'Donation'}</div>
+            <div style="color:var(--muted);font-size:13px">${d.donation_date} • ${d.notes || ''}</div>
+          </div>
+          <div style="font-weight:800;color:#10b981;">$${(d.amount||0).toFixed(2)}</div>
+        </div>
+      `).join('');
+    });
+</script>
+{% endblock %}

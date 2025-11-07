@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>Activities</h1>
+    <div class="subtitle">Track events, volunteer sessions, and other activities</div>
+  </div>
+  <div>
+    <button class="add-btn" onclick="alert('New Activity form')">+ New Activity</button>
+  </div>
+</div>
+
+<div style="margin-top:18px;">
+  <div class="search-row">
+    <input type="search" placeholder="Search activities..." />
+    <select><option>All Types</option></select>
+  </div>
+
+  <div class="empty-box" style="height:150px;">No activities found<br><small style="color:var(--muted)">Create your first activity to get started</small></div>
+</div>
+{% endblock %}

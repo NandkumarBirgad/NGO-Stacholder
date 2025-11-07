@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>Projects</h1>
+    <div class="subtitle">Manage your NGO programs and initiatives</div>
+  </div>
+  <div>
+    <button class="add-btn" onclick="alert('New Project form')">+ New Project</button>
+  </div>
+</div>
+
+<div style="margin-top:18px;">
+  <div class="search-row">
+    <select>
+      <option>All Projects</option>
+    </select>
+  </div>
+
+  <div class="empty-box" style="height:160px;">No projects found<br><small style="color:var(--muted)">Create your first project to get started</small></div>
+</div>
+{% endblock %}

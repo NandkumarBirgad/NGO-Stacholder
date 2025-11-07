@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>Stakeholders</h1>
+    <div class="subtitle">Manage volunteers, donors, beneficiaries, and partners</div>
+  </div>
+  <div>
+    <button class="add-btn" onclick="alert('Add stakeholder flow - implement form')">+ Add Stakeholder</button>
+  </div>
+</div>
+
+<div class="search-row">
+  <input type="search" id="stakeSearch" placeholder="Search stakeholders..." />
+  <select>
+    <option>All Types</option>
+    <option>Volunteer</option>
+    <option>Donor</option>
+    <option>Beneficiary</option>
+  </select>
+  <select>
+    <option>All Status</option>
+    <option>Active</option>
+    <option>Inactive</option>
+  </select>
+</div>
+
+<div class="table">
+  <table id="stakeholdersTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Contact</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Filled by client if we build list -->
+      <tr><td colspan="4" style="text-align:center; color:var(--muted);">No stakeholders found</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  // Basic search hook (optional): call /api/search/stakeholders?q=...
+  document.getElementById('stakeSearch').addEventListener('input', function(e){
+    const q = e.target.value.trim();
+    if (!q) return;
+    fetch('/api/search/stakeholders?q=' + encodeURIComponent(q))
+      .then(r => r.json())
+      .then(data => {
+        const tbody = document.querySelector('#stakeholdersTable tbody');
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">No stakeholders found</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.map(item => 
+          `<tr>
+            <td>${item.name}</td>
+            <td>${item.type}</td>
+            <td>${item.email || item.phone || ''}</td>
+            <td>--</td>
+          </tr>`).join('');
+      });
+  });
+</script>
+{% endblock %}
