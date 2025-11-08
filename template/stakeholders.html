@@ -1,27 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="page-title">
-  <div>
+<div class="page-title" style="display: flex !important; align-items: flex-start !important; justify-content: space-between !important; gap: 24px !important; margin-bottom: 32px !important;">
+  <div style="flex: 1;">
     <h1>Stakeholders</h1>
     <div class="subtitle">Manage volunteers, donors, beneficiaries, and partners</div>
   </div>
-  <div>
-    <button class="add-btn" onclick="showAddStakeholderForm()">+ Add Stakeholder</button>
+  <div style="flex-shrink: 0 !important; display: block !important; visibility: visible !important; opacity: 1 !important;">
+    <button id="addStakeholderBtn" class="add-btn" onclick="if(typeof showAddStakeholderForm === 'function') { showAddStakeholderForm(); } else { alert('Function not loaded. Please refresh page.'); } return false;" type="button" style="background: #3b82f6 !important; background-image: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; color: #ffffff !important; display: inline-flex !important; visibility: visible !important; opacity: 1 !important; padding: 14px 24px !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 600 !important; font-size: 15px !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important; width: auto !important; height: auto !important; z-index: 100 !important; position: relative !important; align-items: center !important; gap: 8px !important;">
+      <i class="fas fa-plus"></i> 
+      <span>Add Stakeholder</span>
+    </button>
   </div>
 </div>
 
+<div style="margin: 20px 0; padding: 16px; background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <strong style="color: #1e40af;">Quick Action:</strong>
+    <span style="color: #64748b; margin-left: 8px;">Click the button below to add a new stakeholder</span>
+  </div>
+  <button onclick="showAddStakeholderForm(); return false;" style="background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 15px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+    <i class="fas fa-plus"></i> Add Stakeholder
+  </button>
+</div>
+
 <div class="search-row">
-  <input type="search" id="stakeSearch" placeholder="Search stakeholders..." />
-  <select>
-    <option>All Types</option>
-    <option>Volunteer</option>
-    <option>Donor</option>
-    <option>Beneficiary</option>
+  <input type="search" id="stakeSearch" placeholder="🔍 Search stakeholders by name or email..." />
+  <select id="typeFilter">
+    <option value="">All Types</option>
+    <option value="volunteer">Volunteer</option>
+    <option value="donor">Donor</option>
+    <option value="beneficiary">Beneficiary</option>
   </select>
-  <select>
-    <option>All Status</option>
-    <option>Active</option>
-    <option>Inactive</option>
+  <select id="statusFilter">
+    <option value="">All Status</option>
+    <option value="Active">Active</option>
+    <option value="Inactive">Inactive</option>
   </select>
 </div>
 
@@ -32,28 +45,36 @@
         <th>Name</th>
         <th>Type</th>
         <th>Contact</th>
+        <th>Location</th>
         <th>Status</th>
+        <th>Joined</th>
       </tr>
     </thead>
     <tbody>
-      <!-- Filled by client if we build list -->
-      <tr><td colspan="4" style="text-align:center; color:var(--muted);">No stakeholders found</td></tr>
+      <tr>
+        <td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">
+          <i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:12px;"></i>
+          <div>Loading stakeholders...</div>
+        </td>
+      </tr>
     </tbody>
   </table>
 </div>
 
 <!-- Modal for Add Stakeholder Form -->
 <div id="addStakeholderModal" class="modal" style="display:none;">
-  <div class="form-container">
+  <div class="form-container" style="max-width: 650px; margin: 40px auto;">
     <header class="form-header">
-      <h2>Add New Stakeholder</h2>
-      <button class="close-btn" onclick="closeForm()">×</button>
+      <h2><i class="fas fa-user-plus" style="margin-right:10px;"></i>Add New Stakeholder</h2>
+      <button class="close-btn" onclick="closeForm()" type="button">×</button>
     </header>
 
-    <form id="stakeholderForm">
+    <form id="stakeholderForm" style="padding: 32px;">
       <div class="form-row full-width">
-        <label for="fullName">Full Name *</label>
-        <input type="text" id="fullName" name="fullName" required>
+        <div class="form-group">
+          <label for="fullName">Full Name *</label>
+          <input type="text" id="fullName" name="fullName" required placeholder="Enter full name">
+        </div>
       </div>
 
       <div class="form-row">
@@ -62,14 +83,14 @@
           <select id="type" name="type" required>
             <option value="volunteer">Volunteer</option>
             <option value="donor">Donor</option>
-            <option value="Beneficiary">Beneficiary</option>
+            <option value="beneficiary">Beneficiary</option>
           </select>
         </div>
         <div class="form-group">
           <label for="status">Status</label>
           <select id="status" name="status">
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
           </select>
         </div>
       </div>
@@ -77,71 +98,98 @@
       <div class="form-row">
         <div class="form-group">
           <label for="email">Email</label>
-          <input type="email" id="email" name="email">
+          <input type="email" id="email" name="email" placeholder="email@example.com">
         </div>
         <div class="form-group">
           <label for="phone">Phone</label>
-          <input type="tel" id="phone" name="phone">
+          <input type="tel" id="phone" name="phone" placeholder="+1 234 567 8900">
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label for="city">City</label>
-          <input type="text" id="city" name="city">
+          <input type="text" id="city" name="city" placeholder="City name">
         </div>
         <div class="form-group">
           <label for="joinedDate">Joined Date</label>
-          <input type="date" id="joinedDate" name="joinedDate" value="2025-11-07">
+          <input type="date" id="joinedDate" name="joinedDate" value="">
         </div>
       </div>
 
       <div class="form-row full-width">
-        <label for="address">Address</label>
-        <textarea id="address" name="address"></textarea>
+        <div class="form-group">
+          <label for="address">Address</label>
+          <textarea id="address" name="address" placeholder="Full address" rows="3"></textarea>
+        </div>
       </div>
 
       <div class="form-row full-width">
-        <label for="notes">Notes</label>
-        <textarea id="notes" name="notes" rows="4"></textarea>
+        <div class="form-group">
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" rows="4" placeholder="Additional notes or comments"></textarea>
+        </div>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn cancel-btn" onclick="closeForm()">Cancel</button>
-        <button type="submit" class="btn create-btn">Create</button>
+        <button type="button" class="btn cancel-btn" onclick="closeForm()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="submit" class="btn create-btn">
+          <i class="fas fa-check"></i> Create
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <script>
-  function showAddStakeholderForm() {
-    document.getElementById('addStakeholderModal').style.display = 'block';
-  }
-
-  function closeAddStakeholderForm() {
-    document.getElementById('addStakeholderModal').style.display = 'none';
-    document.getElementById('stakeholderForm').reset();
-  }
-
-  // Show/hide fields based on stakeholder type
-  document.getElementById('type').addEventListener('change', function(e) {
-    const type = e.target.value;
-    const statusGroup = document.getElementById('statusGroup');
-    const joinDateGroup = document.getElementById('joinDateGroup');
-
-    if (type === 'volunteer') {
-      statusGroup.style.display = 'block';
-      joinDateGroup.style.display = 'block';
+  let allStakeholders = [];
+  
+  // Make function globally accessible - define it immediately (before DOM ready)
+  window.showAddStakeholderForm = function() {
+    console.log('showAddStakeholderForm called');
+    const modal = document.getElementById('addStakeholderModal');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.style.alignItems = 'center';
+      modal.style.justifyContent = 'center';
+      // Set default date to today
+      const today = new Date().toISOString().split('T')[0];
+      const dateInput = document.getElementById('joinedDate');
+      if (dateInput) {
+        dateInput.value = today;
+      }
+      console.log('Modal opened');
     } else {
-      statusGroup.style.display = 'none';
-      joinDateGroup.style.display = 'none';
+      console.error('Modal not found!');
+      alert('Form modal not found. Please refresh the page.');
+    }
+  };
+  
+  // Verify button exists on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.querySelector('.page-title .add-btn');
+    console.log('Button found:', btn);
+    if (btn) {
+      console.log('Button styles:', window.getComputedStyle(btn));
+      // Force button to be visible
+      btn.style.display = 'inline-flex';
+      btn.style.visibility = 'visible';
+      btn.style.opacity = '1';
+    } else {
+      console.error('Add button not found in DOM!');
     }
   });
 
   // Handle form submission
   document.getElementById('stakeholderForm').addEventListener('submit', function(e) {
     e.preventDefault();
+
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="loading"></span> Creating...';
+    submitBtn.disabled = true;
 
     const formData = new FormData(this);
     const data = Object.fromEntries(formData);
@@ -155,64 +203,131 @@
     })
     .then(response => response.json())
     .then(result => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+      
       if (result.success) {
-        alert('Stakeholder added successfully!');
+        if (typeof showNotification === 'function') {
+          showNotification('Stakeholder added successfully!', 'success');
+        } else {
+          alert('Stakeholder added successfully!');
+        }
         closeForm();
-        // Refresh the stakeholders list
         loadStakeholders();
+        // Trigger dashboard refresh
+        if (typeof triggerDashboardRefresh === 'function') {
+          triggerDashboardRefresh();
+        } else {
+          localStorage.setItem('dashboardRefresh', Date.now().toString());
+        }
       } else {
-        alert('Error adding stakeholder: ' + result.message);
+        if (typeof showNotification === 'function') {
+          showNotification('Error: ' + result.message, 'error');
+        } else {
+          alert('Error adding stakeholder: ' + result.message);
+        }
       }
     })
     .catch(error => {
       console.error('Error:', error);
-      alert('Error adding stakeholder');
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+      if (typeof showNotification === 'function') {
+        showNotification('Error adding stakeholder', 'error');
+      } else {
+        alert('Error adding stakeholder');
+      }
     });
   });
 
-  // Basic search hook (optional): call /api/search/stakeholders?q=...
-  document.getElementById('stakeSearch').addEventListener('input', function(e){
-    const q = e.target.value.trim();
-    if (!q) return;
-    fetch('/api/search/stakeholders?q=' + encodeURIComponent(q))
-      .then(r => r.json())
-      .then(data => {
-        const tbody = document.querySelector('#stakeholdersTable tbody');
-        if (!data.length) {
-          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">No stakeholders found</td></tr>';
-          return;
-        }
-        tbody.innerHTML = data.map(item =>
-          `<tr>
-            <td>${item.name}</td>
-            <td>${item.type}</td>
-            <td>${item.email || item.phone || ''}</td>
-            <td>--</td>
-          </tr>`).join('');
-      });
-  });
-
-  // Load stakeholders on page load
+  // Load and filter stakeholders
   function loadStakeholders() {
+    const tbody = document.querySelector('#stakeholdersTable tbody');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;"><i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:12px;"></i><div>Loading stakeholders...</div></td></tr>';
+    
     fetch('/api/stakeholders')
       .then(r => r.json())
       .then(data => {
-        const tbody = document.querySelector('#stakeholdersTable tbody');
-        if (!data.length) {
-          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">No stakeholders found</td></tr>';
-          return;
-        }
-        tbody.innerHTML = data.map(item =>
-          `<tr>
-            <td>${item.full_name}</td>
-            <td>${item.type}</td>
-            <td>${item.email || item.phone || ''}</td>
-            <td>${item.status || 'Active'}</td>
-          </tr>`).join('');
+        allStakeholders = data;
+        filterAndRenderStakeholders();
+      })
+      .catch(err => {
+        console.error('Error loading stakeholders:', err);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--danger); padding:40px;">Error loading stakeholders</td></tr>';
       });
   }
 
+  function filterAndRenderStakeholders() {
+    const searchQuery = document.getElementById('stakeSearch').value.toLowerCase();
+    const typeFilter = document.getElementById('typeFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    
+    let filtered = allStakeholders.filter(item => {
+      const matchesSearch = !searchQuery || 
+        item.full_name?.toLowerCase().includes(searchQuery) ||
+        item.email?.toLowerCase().includes(searchQuery) ||
+        item.phone?.includes(searchQuery);
+      const matchesType = !typeFilter || item.type === typeFilter;
+      const matchesStatus = !statusFilter || item.status === statusFilter;
+      
+      return matchesSearch && matchesType && matchesStatus;
+    });
+
+    const tbody = document.querySelector('#stakeholdersTable tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;"><i class="fas fa-user-slash" style="font-size:32px; margin-bottom:12px; opacity:0.3;"></i><div>No stakeholders found</div></td></tr>';
+      return;
+    }
+
+    const typeColors = {
+      'volunteer': '#3b82f6',
+      'donor': '#10b981',
+      'beneficiary': '#f59e0b'
+    };
+
+    tbody.innerHTML = filtered.map(item => {
+      const typeColor = typeColors[item.type] || '#64748b';
+      const statusClass = item.status === 'Active' ? 'active' : 'inactive';
+      const joinDate = item.join_date ? new Date(item.join_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+      
+      return `
+        <tr>
+          <td style="font-weight:600; color:#0f172a;">${item.full_name || 'N/A'}</td>
+          <td>
+            <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:12px; background:${typeColor}15; color:${typeColor}; font-weight:600; font-size:12px; text-transform:capitalize;">
+              <i class="fas fa-${item.type === 'volunteer' ? 'user' : item.type === 'donor' ? 'hand-holding-usd' : 'heart'}"></i>
+              ${item.type || 'N/A'}
+            </span>
+          </td>
+          <td>
+            <div style="font-size:13px; color:#374151;">
+              ${item.email ? `<div><i class="fas fa-envelope" style="margin-right:6px; color:var(--muted);"></i>${item.email}</div>` : ''}
+              ${item.phone ? `<div style="margin-top:4px;"><i class="fas fa-phone" style="margin-right:6px; color:var(--muted);"></i>${item.phone}</div>` : ''}
+            </div>
+          </td>
+          <td style="color:var(--muted); font-size:13px;">${item.address || 'N/A'}</td>
+          <td><span class="status-badge ${statusClass}">${item.status || 'Active'}</span></td>
+          <td style="color:var(--muted); font-size:13px;">${joinDate}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Event listeners for filtering
+  document.getElementById('stakeSearch').addEventListener('input', filterAndRenderStakeholders);
+  document.getElementById('typeFilter').addEventListener('change', filterAndRenderStakeholders);
+  document.getElementById('statusFilter').addEventListener('change', filterAndRenderStakeholders);
+
   // Load stakeholders when page loads
-  document.addEventListener('DOMContentLoaded', loadStakeholders);
+  document.addEventListener('DOMContentLoaded', function() {
+    loadStakeholders();
+    
+    // Set default date
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('joinedDate');
+    if (dateInput) {
+      dateInput.value = today;
+    }
+  });
 </script>
 {% endblock %}

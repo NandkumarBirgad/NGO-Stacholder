@@ -6,14 +6,21 @@
     <div class="subtitle">Manage your NGO programs and initiatives</div>
   </div>
   <div>
-    <button class="add-btn" onclick="showAddProjectForm()">+ New Project</button>
+    <button class="add-btn" onclick="showAddProjectForm()">
+      <i class="fas fa-plus"></i> New Project
+    </button>
   </div>
 </div>
 
 <div style="margin-top:18px;">
   <div class="search-row">
-    <select>
-      <option>All Projects</option>
+    <input type="search" id="projectSearch" placeholder="🔍 Search projects..." />
+    <select id="statusFilter">
+      <option value="">All Status</option>
+      <option value="Planning">Planning</option>
+      <option value="Active">Active</option>
+      <option value="Completed">Completed</option>
+      <option value="On Hold">On Hold</option>
     </select>
   </div>
 
@@ -22,15 +29,20 @@
       <thead>
         <tr>
           <th>Project Name</th>
-          <th>Category</th>
+          <th>Description</th>
           <th>Status</th>
           <th>Start Date</th>
           <th>Budget</th>
+          <th>Location</th>
         </tr>
       </thead>
       <tbody>
-        <!-- Filled by client if we build list -->
-        <tr><td colspan="5" style="text-align:center; color:var(--muted);">No projects found</td></tr>
+        <tr>
+          <td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">
+            <i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:12px;"></i>
+            <div>Loading projects...</div>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -40,14 +52,16 @@
 <div id="addProjectModal" class="modal" style="display:none;">
   <div class="form-container">
     <header class="form-header">
-      <h2>Create New Project</h2>
+      <h2><i class="fas fa-folder-plus" style="margin-right:10px;"></i>Create New Project</h2>
       <button class="close-btn" onclick="closeProjectForm()">×</button>
     </header>
 
-    <form id="projectForm">
+    <form id="projectForm" style="padding: 32px;">
       <div class="form-row full-width">
-        <label for="projectName">Project Name *</label>
-        <input type="text" id="projectName" name="projectName" required>
+        <div class="form-group">
+          <label for="projectName">Project Name *</label>
+          <input type="text" id="projectName" name="projectName" required placeholder="Enter project name">
+        </div>
       </div>
 
       <div class="form-row">
@@ -85,46 +99,60 @@
       <div class="form-row">
         <div class="form-group">
           <label for="budget">Budget ($)</label>
-          <input type="number" id="budget" name="budget" value="0" min="0">
+          <input type="number" id="budget" name="budget" value="0" min="0" step="0.01" placeholder="0.00">
         </div>
         <div class="form-group">
           <label for="targetBeneficiaries">Target Beneficiaries</label>
-          <input type="number" id="targetBeneficiaries" name="targetBeneficiaries" value="0" min="0">
+          <input type="number" id="targetBeneficiaries" name="targetBeneficiaries" value="0" min="0" placeholder="0">
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label for="volunteersNeeded">Volunteers Needed</label>
-          <input type="number" id="volunteersNeeded" name="volunteersNeeded" value="0" min="0">
+          <input type="number" id="volunteersNeeded" name="volunteersNeeded" value="0" min="0" placeholder="0">
         </div>
         <div class="form-group">
           <label for="location">Location</label>
-          <input type="text" id="location" name="location">
+          <input type="text" id="location" name="location" placeholder="Project location">
         </div>
       </div>
 
       <div class="form-row full-width">
-        <label for="projectManager">Project Manager</label>
-        <input type="text" id="projectManager" name="projectManager">
+        <div class="form-group">
+          <label for="projectManager">Project Manager</label>
+          <input type="text" id="projectManager" name="projectManager" placeholder="Manager name">
+        </div>
       </div>
 
       <div class="form-row full-width">
-        <label for="description">Description</label>
-        <textarea id="description" name="description" rows="3"></textarea>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="3" placeholder="Project description"></textarea>
+        </div>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn cancel-btn" onclick="closeProjectForm()">Cancel</button>
-        <button type="submit" class="btn create-btn">Create</button>
+        <button type="button" class="btn cancel-btn" onclick="closeProjectForm()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="submit" class="btn create-btn">
+          <i class="fas fa-check"></i> Create
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <script>
+  let allProjects = [];
+
   function showAddProjectForm() {
-    document.getElementById('addProjectModal').style.display = 'block';
+    document.getElementById('addProjectModal').style.display = 'flex';
+    document.getElementById('addProjectModal').style.alignItems = 'center';
+    document.getElementById('addProjectModal').style.justifyContent = 'center';
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('startDate').value = today;
   }
 
   function closeProjectForm() {
@@ -135,6 +163,11 @@
   // Handle form submission
   document.getElementById('projectForm').addEventListener('submit', function(e) {
     e.preventDefault();
+
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="loading"></span> Creating...';
+    submitBtn.disabled = true;
 
     const formData = new FormData(this);
     const data = Object.fromEntries(formData);
@@ -148,43 +181,111 @@
     })
     .then(response => response.json())
     .then(result => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+      
       if (result.success) {
-        alert('Project added successfully!');
+        if (typeof showNotification === 'function') {
+          showNotification('Project added successfully!', 'success');
+        } else {
+          alert('Project added successfully!');
+        }
         closeProjectForm();
-        // Refresh the projects list
         loadProjects();
+        // Trigger dashboard refresh
+        if (typeof triggerDashboardRefresh === 'function') {
+          triggerDashboardRefresh();
+        } else {
+          localStorage.setItem('dashboardRefresh', Date.now().toString());
+        }
       } else {
-        alert('Error adding project: ' + result.message);
+        if (typeof showNotification === 'function') {
+          showNotification('Error: ' + result.message, 'error');
+        } else {
+          alert('Error adding project: ' + result.message);
+        }
       }
     })
     .catch(error => {
       console.error('Error:', error);
-      alert('Error adding project');
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+      if (typeof showNotification === 'function') {
+        showNotification('Error adding project', 'error');
+      } else {
+        alert('Error adding project');
+      }
     });
   });
 
-  // Load projects on page load
+  // Load and filter projects
   function loadProjects() {
+    const tbody = document.querySelector('#projectsTable tbody');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;"><i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:12px;"></i><div>Loading projects...</div></td></tr>';
+    
     fetch('/api/projects')
       .then(r => r.json())
       .then(data => {
-        const tbody = document.querySelector('#projectsTable tbody');
-        if (!data.length) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">No projects found</td></tr>';
-          return;
-        }
-        tbody.innerHTML = data.map(item =>
-          `<tr>
-            <td>${item.name}</td>
-            <td>${item.category || 'N/A'}</td>
-            <td>${item.status || 'Planning'}</td>
-            <td>${item.start_date || 'N/A'}</td>
-            <td>$${item.budget || 0}</td>
-          </tr>`).join('');
+        allProjects = data;
+        filterAndRenderProjects();
+      })
+      .catch(err => {
+        console.error('Error loading projects:', err);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--danger); padding:40px;">Error loading projects</td></tr>';
       });
   }
 
+  function filterAndRenderProjects() {
+    const searchQuery = document.getElementById('projectSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    
+    let filtered = allProjects.filter(item => {
+      const matchesSearch = !searchQuery || 
+        item.name?.toLowerCase().includes(searchQuery) ||
+        item.description?.toLowerCase().includes(searchQuery);
+      const matchesStatus = !statusFilter || item.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+
+    const tbody = document.querySelector('#projectsTable tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;"><i class="fas fa-folder-open" style="font-size:32px; margin-bottom:12px; opacity:0.3;"></i><div>No projects found</div></td></tr>';
+      return;
+    }
+
+    const statusColors = {
+      'Planning': '#f59e0b',
+      'Active': '#10b981',
+      'Completed': '#64748b',
+      'On Hold': '#ef4444'
+    };
+
+    tbody.innerHTML = filtered.map(item => {
+      const statusColor = statusColors[item.status] || '#64748b';
+      const startDate = item.start_date ? new Date(item.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+      const budget = item.budget ? parseFloat(item.budget) : 0;
+      
+      return `
+        <tr>
+          <td style="font-weight:600; color:#0f172a;">${item.name || 'Unnamed Project'}</td>
+          <td style="color:var(--muted); font-size:13px; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.description || 'No description'}</td>
+          <td><span class="status-badge" style="background:${statusColor}15; color:${statusColor};">${item.status || 'Planning'}</span></td>
+          <td style="color:var(--muted); font-size:13px;">${startDate}</td>
+          <td style="font-weight:600; color:#10b981;">$${budget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          <td style="color:var(--muted); font-size:13px;">${item.location || 'N/A'}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Event listeners for filtering
+  document.getElementById('projectSearch').addEventListener('input', filterAndRenderProjects);
+  document.getElementById('statusFilter').addEventListener('change', filterAndRenderProjects);
+
   // Load projects when page loads
-  document.addEventListener('DOMContentLoaded', loadProjects);
+  document.addEventListener('DOMContentLoaded', function() {
+    loadProjects();
+  });
 </script>
 {% endblock %}

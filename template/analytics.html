@@ -8,25 +8,271 @@
 </div>
 
 <div class="cards">
-  <div class="card"><h3>Total Stakeholders</h3><p id="totalStakeholders">0</p></div>
-  <div class="card"><h3>Total Donations</h3><p id="analyticsTotalDonations">$0</p></div>
-  <div class="card"><h3>Volunteer Hours</h3><p id="analyticsVolHours">0</p></div>
-  <div class="card"><h3>Avg Donation</h3><p id="analyticsAvgDonation">$0</p></div>
+  <div class="card">
+    <h3><i class="fas fa-users" style="color: #3b82f6;"></i> Total Stakeholders</h3>
+    <p id="totalStakeholders">0</p>
+    <small>All stakeholders</small>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-dollar-sign" style="color: #10b981;"></i> Total Donations</h3>
+    <p id="analyticsTotalDonations">$0.00</p>
+    <small>All-time donations</small>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-folder-open" style="color: #8b5cf6;"></i> Total Projects</h3>
+    <p id="totalProjects">0</p>
+    <small>All projects</small>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-calendar-alt" style="color: #f59e0b;"></i> Total Activities</h3>
+    <p id="totalActivities">0</p>
+    <small>All activities</small>
+  </div>
+</div>
+
+<div class="cards" style="margin-top:24px;">
+  <div class="card">
+    <h3><i class="fas fa-user" style="color: #3b82f6;"></i> Volunteers</h3>
+    <p id="totalVolunteers">0</p>
+    <small>Total volunteers</small>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-hand-holding-usd" style="color: #10b981;"></i> Donors</h3>
+    <p id="totalDonors">0</p>
+    <small>Total donors</small>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-heart" style="color: #ef4444;"></i> Beneficiaries</h3>
+    <p id="totalBeneficiaries">0</p>
+    <small>Total beneficiaries</small>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-chart-bar" style="color: #06b6d4;"></i> Total Entries</h3>
+    <p id="totalEntries">0</p>
+    <small>All form submissions</small>
+  </div>
+</div>
+
+<div class="card" style="margin-top:24px;">
+  <h3><i class="fas fa-chart-line" style="color: #8b5cf6;"></i> Average Donation</h3>
+  <p id="analyticsAvgDonation" style="font-size:32px;">$0.00</p>
+  <small>Average per donation</small>
 </div>
 
 <div class="grid-2">
   <div class="card">
-    <h3>Stakeholder Distribution</h3>
-    <div class="empty-box" style="height:200px;">(pie chart placeholder)</div>
+    <h3><i class="fas fa-chart-pie" style="color: #06b6d4;"></i> Stakeholder Distribution</h3>
+    <div style="position:relative; height:300px; padding:20px;">
+      <canvas id="stakeholderChart"></canvas>
+    </div>
   </div>
   <div class="card">
-    <h3>Project Categories</h3>
-    <div class="empty-box" style="height:200px;">(bar chart placeholder)</div>
+    <h3><i class="fas fa-chart-bar" style="color: #ef4444;"></i> Donations by Type</h3>
+    <div style="position:relative; height:300px; padding:20px;">
+      <canvas id="donationTypeChart"></canvas>
+    </div>
   </div>
 </div>
 
-<div class="card" style="padding:18px;">
-  <h3>Donation Trends (Last 6 Months)</h3>
-  <canvas id="donationTrend" height="160"></canvas>
+<div class="card" style="margin-top:24px;">
+  <h3><i class="fas fa-line-chart" style="color: #3b82f6;"></i> Donation Trends (Last 6 Months)</h3>
+  <div style="position:relative; height:400px; padding:20px;">
+    <canvas id="donationTrend"></canvas>
+  </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    loadAnalyticsData();
+    loadStakeholderChart();
+    loadDonationTypeChart();
+  });
+
+  function loadAnalyticsData() {
+    // Load total counts
+    fetch('/api/total_counts')
+      .then(r => r.json())
+      .then(data => {
+        if (document.getElementById('totalStakeholders')) {
+          animateNumber('totalStakeholders', data.total_stakeholders || 0, 800);
+        }
+        if (document.getElementById('totalVolunteers')) {
+          animateNumber('totalVolunteers', data.total_volunteers || 0, 800);
+        }
+        if (document.getElementById('totalDonors')) {
+          animateNumber('totalDonors', data.total_donors || 0, 800);
+        }
+        if (document.getElementById('totalBeneficiaries')) {
+          animateNumber('totalBeneficiaries', data.total_beneficiaries || 0, 800);
+        }
+        if (document.getElementById('totalProjects')) {
+          animateNumber('totalProjects', data.total_projects || 0, 800);
+        }
+        if (document.getElementById('totalActivities')) {
+          animateNumber('totalActivities', data.total_activities || 0, 800);
+        }
+        if (document.getElementById('totalEntries')) {
+          animateNumber('totalEntries', data.total_entries || 0, 800);
+        }
+      })
+      .catch(err => console.error('Error loading total counts:', err));
+
+    // Load donations data for total and average
+    fetch('/api/donations')
+      .then(r => r.json())
+      .then(data => {
+        let total = 0;
+        data.forEach(d => {
+          total += parseFloat(d.amount) || 0;
+        });
+        const avg = data.length > 0 ? total / data.length : 0;
+        
+        if (document.getElementById('analyticsTotalDonations')) {
+          animateCurrency('analyticsTotalDonations', total, 800);
+        }
+        if (document.getElementById('analyticsAvgDonation')) {
+          animateCurrency('analyticsAvgDonation', avg, 800);
+        }
+      })
+      .catch(err => console.error('Error loading donations:', err));
+  }
+
+  function loadStakeholderChart() {
+    fetch('/api/stakeholders')
+      .then(r => r.json())
+      .then(data => {
+        const counts = {
+          volunteer: 0,
+          donor: 0,
+          beneficiary: 0
+        };
+        
+        data.forEach(item => {
+          if (counts[item.type] !== undefined) {
+            counts[item.type]++;
+          }
+        });
+
+        const ctx = document.getElementById('stakeholderChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Volunteers', 'Donors', 'Beneficiaries'],
+            datasets: [{
+              data: [counts.volunteer, counts.donor, counts.beneficiary],
+              backgroundColor: [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)'
+              ],
+              borderColor: [
+                '#3b82f6',
+                '#10b981',
+                '#f59e0b'
+              ],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  padding: 20,
+                  font: {
+                    size: 13,
+                    weight: '600'
+                  }
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                padding: 12,
+                titleFont: { size: 14, weight: '600' },
+                bodyFont: { size: 13 }
+              }
+            }
+          }
+        });
+      })
+      .catch(err => {
+        console.error('Error loading stakeholder chart:', err);
+        document.getElementById('stakeholderChart').parentElement.innerHTML = 
+          '<div class="empty-box" style="min-height:300px;">Error loading chart data</div>';
+      });
+  }
+
+  function loadDonationTypeChart() {
+    fetch('/api/donations')
+      .then(r => r.json())
+      .then(data => {
+        const typeCounts = {};
+        data.forEach(d => {
+          const type = d.donation_type || 'Other';
+          typeCounts[type] = (typeCounts[type] || 0) + 1;
+        });
+
+        const labels = Object.keys(typeCounts);
+        const counts = Object.values(typeCounts);
+
+        const ctx = document.getElementById('donationTypeChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Number of Donations',
+              data: counts,
+              backgroundColor: 'rgba(59, 130, 246, 0.8)',
+              borderColor: '#3b82f6',
+              borderWidth: 2,
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                padding: 12,
+                titleFont: { size: 14, weight: '600' },
+                bodyFont: { size: 13 }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  stepSize: 1,
+                  font: { size: 12 }
+                },
+                grid: {
+                  color: 'rgba(226, 232, 240, 0.5)'
+                }
+              },
+              x: {
+                ticks: {
+                  font: { size: 12 }
+                },
+                grid: {
+                  display: false
+                }
+              }
+            }
+          }
+        });
+      })
+      .catch(err => {
+        console.error('Error loading donation type chart:', err);
+        document.getElementById('donationTypeChart').parentElement.innerHTML = 
+          '<div class="empty-box" style="min-height:300px;">Error loading chart data</div>';
+      });
+  }
+</script>
 {% endblock %}

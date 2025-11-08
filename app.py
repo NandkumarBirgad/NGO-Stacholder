@@ -193,7 +193,7 @@ def api_recent_entries():
         SELECT 'Event' AS type, event_name AS name, event_date AS date
         FROM event
         UNION ALL
-        SELECT 'Donation' AS type, CONCAT(donation_type, ' - ', amount) AS name, donation_date AS date
+        SELECT 'Donation' AS type, CONCAT(donation_type, ' - $', amount) AS name, donation_date AS date
         FROM donation
         ORDER BY date DESC
         LIMIT 20;
@@ -202,6 +202,51 @@ def api_recent_entries():
     cur.close()
     conn.close()
     return json.loads(json.dumps(rows, cls=DecimalEncoder))
+
+@app.route('/api/total_counts')
+def api_total_counts():
+    """
+    Get total counts of all entries for analytics page.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Count stakeholders
+    cur.execute("SELECT COUNT(*) FROM volunteer")
+    total_volunteers = cur.fetchone()[0]
+    
+    cur.execute("SELECT COUNT(*) FROM donor")
+    total_donors = cur.fetchone()[0]
+    
+    cur.execute("SELECT COUNT(*) FROM beneficiary")
+    total_beneficiaries = cur.fetchone()[0]
+    
+    total_stakeholders = total_volunteers + total_donors + total_beneficiaries
+    
+    # Count projects/events
+    cur.execute("SELECT COUNT(*) FROM event")
+    total_projects = cur.fetchone()[0]
+    
+    # Count donations
+    cur.execute("SELECT COUNT(*) FROM donation")
+    total_donations = cur.fetchone()[0]
+    
+    # Count activities (same as events in current schema)
+    total_activities = total_projects
+    
+    cur.close()
+    conn.close()
+    
+    return jsonify({
+        "total_stakeholders": int(total_stakeholders),
+        "total_volunteers": int(total_volunteers),
+        "total_donors": int(total_donors),
+        "total_beneficiaries": int(total_beneficiaries),
+        "total_projects": int(total_projects),
+        "total_activities": int(total_activities),
+        "total_donations": int(total_donations),
+        "total_entries": int(total_stakeholders + total_projects + total_donations)
+    })
 
 # Simple search endpoints (optional)
 @app.route('/api/search/stakeholders')

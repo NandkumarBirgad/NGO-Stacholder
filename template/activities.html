@@ -6,14 +6,23 @@
     <div class="subtitle">Track events, volunteer sessions, and other activities</div>
   </div>
   <div>
-    <button class="add-btn" onclick="showAddActivityForm()">+ New Activity</button>
+    <button class="add-btn" onclick="showAddActivityForm()">
+      <i class="fas fa-plus"></i> New Activity
+    </button>
   </div>
 </div>
 
 <div style="margin-top:18px;">
   <div class="search-row">
-    <input type="search" placeholder="Search activities..." />
-    <select><option>All Types</option></select>
+    <input type="search" id="activitySearch" placeholder="🔍 Search activities..." />
+    <select id="typeFilter">
+      <option value="">All Types</option>
+      <option value="Event">Event</option>
+      <option value="Workshop">Workshop</option>
+      <option value="Volunteer Session">Volunteer Session</option>
+      <option value="Fundraising">Fundraising</option>
+      <option value="Community Outreach">Community Outreach</option>
+    </select>
   </div>
 
   <div class="table">
@@ -24,12 +33,17 @@
           <th>Type</th>
           <th>Date</th>
           <th>Location</th>
-          <th>Volunteers</th>
+          <th>Budget</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody>
-        <!-- Filled by client if we build list -->
-        <tr><td colspan="5" style="text-align:center; color:var(--muted);">No activities found</td></tr>
+        <tr>
+          <td colspan="6" style="text-align:center; color:var(--muted); padding:40px;">
+            <i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:12px;"></i>
+            <div>Loading activities...</div>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -39,14 +53,16 @@
 <div id="addActivityModal" class="modal" style="display:none;">
   <div class="form-container">
     <header class="form-header">
-      <h2>Create New Activity</h2>
+      <h2><i class="fas fa-calendar-plus" style="margin-right:10px;"></i>Create New Activity</h2>
       <button class="close-btn" onclick="closeActivityForm()">×</button>
     </header>
 
-    <form id="activityForm">
+    <form id="activityForm" style="padding: 32px;">
       <div class="form-row full-width">
-        <label for="activityName">Activity Name *</label>
-        <input type="text" id="activityName" name="activityName" required>
+        <div class="form-group">
+          <label for="activityName">Activity Name *</label>
+          <input type="text" id="activityName" name="activityName" required placeholder="Enter activity name">
+        </div>
       </div>
 
       <div class="form-row">
@@ -85,51 +101,67 @@
       <div class="form-row">
         <div class="form-group">
           <label for="location">Location</label>
-          <input type="text" id="location" name="location">
+          <input type="text" id="location" name="location" placeholder="Activity location">
         </div>
         <div class="form-group">
           <label for="expectedAttendees">Expected Attendees</label>
-          <input type="number" id="expectedAttendees" name="expectedAttendees" value="0" min="0">
+          <input type="number" id="expectedAttendees" name="expectedAttendees" value="0" min="0" placeholder="0">
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label for="budget">Budget ($)</label>
-          <input type="number" id="budget" name="budget" value="0" min="0">
+          <input type="number" id="budget" name="budget" value="0" min="0" step="0.01" placeholder="0.00">
         </div>
         <div class="form-group">
           <label for="volunteersNeeded">Volunteers Needed</label>
-          <input type="number" id="volunteersNeeded" name="volunteersNeeded" value="0" min="0">
+          <input type="number" id="volunteersNeeded" name="volunteersNeeded" value="0" min="0" placeholder="0">
         </div>
       </div>
 
       <div class="form-row full-width">
-        <label for="organizer">Organizer</label>
-        <input type="text" id="organizer" name="organizer">
+        <div class="form-group">
+          <label for="organizer">Organizer</label>
+          <input type="text" id="organizer" name="organizer" placeholder="Organizer name">
+        </div>
       </div>
 
       <div class="form-row full-width">
-        <label for="description">Description</label>
-        <textarea id="description" name="description" rows="3"></textarea>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="3" placeholder="Activity description"></textarea>
+        </div>
       </div>
 
       <div class="form-row full-width">
-        <label for="notes">Notes</label>
-        <textarea id="notes" name="notes" rows="3"></textarea>
+        <div class="form-group">
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" rows="3" placeholder="Additional notes"></textarea>
+        </div>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn cancel-btn" onclick="closeActivityForm()">Cancel</button>
-        <button type="submit" class="btn create-btn">Create</button>
+        <button type="button" class="btn cancel-btn" onclick="closeActivityForm()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="submit" class="btn create-btn">
+          <i class="fas fa-check"></i> Create
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <script>
+  let allActivities = [];
+
   function showAddActivityForm() {
-    document.getElementById('addActivityModal').style.display = 'block';
+    document.getElementById('addActivityModal').style.display = 'flex';
+    document.getElementById('addActivityModal').style.alignItems = 'center';
+    document.getElementById('addActivityModal').style.justifyContent = 'center';
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('startDate').value = today;
   }
 
   function closeActivityForm() {
@@ -140,6 +172,11 @@
   // Handle form submission
   document.getElementById('activityForm').addEventListener('submit', function(e) {
     e.preventDefault();
+
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="loading"></span> Creating...';
+    submitBtn.disabled = true;
 
     const formData = new FormData(this);
     const data = Object.fromEntries(formData);
@@ -153,43 +190,116 @@
     })
     .then(response => response.json())
     .then(result => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+      
       if (result.success) {
-        alert('Activity added successfully!');
+        if (typeof showNotification === 'function') {
+          showNotification('Activity added successfully!', 'success');
+        } else {
+          alert('Activity added successfully!');
+        }
         closeActivityForm();
-        // Refresh the activities list
         loadActivities();
+        // Trigger dashboard refresh
+        if (typeof triggerDashboardRefresh === 'function') {
+          triggerDashboardRefresh();
+        } else {
+          localStorage.setItem('dashboardRefresh', Date.now().toString());
+        }
       } else {
-        alert('Error adding activity: ' + result.message);
+        if (typeof showNotification === 'function') {
+          showNotification('Error: ' + result.message, 'error');
+        } else {
+          alert('Error adding activity: ' + result.message);
+        }
       }
     })
     .catch(error => {
       console.error('Error:', error);
-      alert('Error adding activity');
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+      if (typeof showNotification === 'function') {
+        showNotification('Error adding activity', 'error');
+      } else {
+        alert('Error adding activity');
+      }
     });
   });
 
-  // Load activities on page load
+  // Load and filter activities
   function loadActivities() {
+    const tbody = document.querySelector('#activitiesTable tbody');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;"><i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:12px;"></i><div>Loading activities...</div></td></tr>';
+    
     fetch('/api/activities')
       .then(r => r.json())
       .then(data => {
-        const tbody = document.querySelector('#activitiesTable tbody');
-        if (!data.length) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">No activities found</td></tr>';
-          return;
-        }
-        tbody.innerHTML = data.map(item =>
-          `<tr>
-            <td>${item.name}</td>
-            <td>${item.type || 'N/A'}</td>
-            <td>${item.start_date || 'N/A'}</td>
-            <td>${item.location || 'N/A'}</td>
-            <td>${item.volunteers_needed || 0}</td>
-          </tr>`).join('');
+        allActivities = data;
+        filterAndRenderActivities();
+      })
+      .catch(err => {
+        console.error('Error loading activities:', err);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--danger); padding:40px;">Error loading activities</td></tr>';
       });
   }
 
+  function filterAndRenderActivities() {
+    const searchQuery = document.getElementById('activitySearch').value.toLowerCase();
+    const typeFilter = document.getElementById('typeFilter').value;
+    
+    let filtered = allActivities.filter(item => {
+      const matchesSearch = !searchQuery || 
+        item.name?.toLowerCase().includes(searchQuery) ||
+        item.description?.toLowerCase().includes(searchQuery);
+      const matchesType = !typeFilter || item.activity_type === typeFilter;
+      
+      return matchesSearch && matchesType;
+    });
+
+    const tbody = document.querySelector('#activitiesTable tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:40px;"><i class="fas fa-calendar-alt" style="font-size:32px; margin-bottom:12px; opacity:0.3;"></i><div>No activities found</div></td></tr>';
+      return;
+    }
+
+    const typeColors = {
+      'Event': '#3b82f6',
+      'Workshop': '#10b981',
+      'Volunteer Session': '#f59e0b',
+      'Fundraising': '#8b5cf6',
+      'Community Outreach': '#ef4444'
+    };
+
+    tbody.innerHTML = filtered.map(item => {
+      const typeColor = typeColors[item.activity_type] || '#64748b';
+      const startDate = item.start_date ? new Date(item.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+      const budget = item.budget ? parseFloat(item.budget) : 0;
+      
+      return `
+        <tr>
+          <td style="font-weight:600; color:#0f172a;">${item.name || 'Unnamed Activity'}</td>
+          <td>
+            <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:12px; background:${typeColor}15; color:${typeColor}; font-weight:600; font-size:12px;">
+              ${item.activity_type || 'N/A'}
+            </span>
+          </td>
+          <td style="color:var(--muted); font-size:13px;">${startDate}</td>
+          <td style="color:var(--muted); font-size:13px;">${item.location || 'N/A'}</td>
+          <td style="font-weight:600; color:#10b981;">$${budget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          <td><span class="status-badge ${item.status === 'Completed' ? 'active' : item.status === 'Cancelled' ? 'inactive' : 'pending'}">${item.status || 'Planning'}</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Event listeners for filtering
+  document.getElementById('activitySearch').addEventListener('input', filterAndRenderActivities);
+  document.getElementById('typeFilter').addEventListener('change', filterAndRenderActivities);
+
   // Load activities when page loads
-  document.addEventListener('DOMContentLoaded', loadActivities);
+  document.addEventListener('DOMContentLoaded', function() {
+    loadActivities();
+  });
 </script>
 {% endblock %}

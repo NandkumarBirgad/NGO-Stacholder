@@ -6,109 +6,131 @@
     <div class="subtitle">Track and manage financial contributions</div>
   </div>
   <div>
-    <button class="add-btn" onclick="showAddDonationForm()">+ Record Donation</button>
+    <button class="add-btn" onclick="showAddDonationForm()">
+      <i class="fas fa-plus"></i> Record Donation
+    </button>
   </div>
 </div>
 
 <div class="cards" style="margin-top:8px;">
-  <div class="card"><h3>Total Raised</h3><p id="totalRaised">$0</p></div>
-  <div class="card"><h3>This Month</h3><p id="thisMonth">$0</p></div>
-  <div class="card"><h3>Total Donations</h3><p id="countDonations">0</p></div>
+  <div class="card">
+    <h3><i class="fas fa-dollar-sign" style="color: #10b981;"></i> Total Raised</h3>
+    <p id="totalRaised">$0.00</p>
+    <small>All-time contributions</small>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-calendar-month" style="color: #3b82f6;"></i> This Month</h3>
+    <p id="thisMonth">$0.00</p>
+    <small>Current month donations</small>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-receipt" style="color: #8b5cf6;"></i> Total Donations</h3>
+    <p id="countDonations">0</p>
+    <small>Number of donations</small>
+  </div>
 </div>
 
 <div class="search-row" style="margin-top:14px;">
-  <input type="search" id="donorSearch" placeholder="Search by donor name..." />
+  <input type="search" id="donorSearch" placeholder="🔍 Search by donor name or amount..." />
 </div>
 
-<div class="table" id="donationList">
-  <!-- fetch and list donations -->
-  <div class="empty-box">No donations recorded</div>
+<div id="donationList" class="table" style="padding:0;">
+  <div class="empty-box" style="min-height:300px;">
+    <i class="fas fa-spinner fa-spin" style="font-size:32px; margin-bottom:16px;"></i>
+    <div>Loading donations...</div>
+  </div>
 </div>
 
 <!-- Modal for Record New Donation Form -->
 <div id="addDonationModal" class="modal" style="display:none;">
   <div class="form-container">
     <header class="form-header">
-      <h2>Record New Donation</h2>
+      <h2><i class="fas fa-donate" style="margin-right:10px;"></i>Record New Donation</h2>
       <button class="close-btn" onclick="closeDonationForm()">×</button>
     </header>
 
-    <form id="donationForm">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="donorName">Donor Name *</label>
-          <select id="donorName" name="donorName" required>
-            <option value="">Select donor</option>
-            <!-- Options will be populated by JavaScript -->
-          </select>
+    <form id="donationForm" style="padding: 32px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="donorName">Donor Name *</label>
+            <select id="donorName" name="donorName" required>
+              <option value="">Select donor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="amount">Amount ($) *</label>
+            <input type="number" id="amount" name="amount" value="0" min="0" step="0.01" required placeholder="0.00">
+          </div>
         </div>
-        <div class="form-group">
-          <label for="amount">Amount *</label>
-          <input type="number" id="amount" name="amount" value="0" min="0" step="0.01" required>
-        </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="date">Date *</label>
-          <input type="date" id="date" name="date" required>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="date">Date *</label>
+            <input type="date" id="date" name="date" required>
+          </div>
+          <div class="form-group">
+            <label for="paymentMethod">Payment Method</label>
+            <select id="paymentMethod" name="paymentMethod">
+              <option value="Online">Online</option>
+              <option value="Cash">Cash</option>
+              <option value="Cheque">Cheque</option>
+              <option value="BankTransfer">Bank Transfer</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="paymentMethod">Payment Method</label>
-          <select id="paymentMethod" name="paymentMethod">
-            <option value="Online">Online</option>
-            <option value="Cash">Cash</option>
-            <option value="Cheque">Cheque</option>
-            <option value="BankTransfer">Bank Transfer</option>
-          </select>
-        </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="category">Category</label>
-          <select id="category" name="category">
-            <option value="General">General</option>
-            <option value="Specific">Specific Fund</option>
-            <option value="Capital">Capital Campaign</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="category">
+              <option value="General">General</option>
+              <option value="Specific">Specific Fund</option>
+              <option value="Capital">Capital Campaign</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="project">Project (Optional)</label>
+            <select id="project" name="project">
+              <option value="">Select project</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="project">Project (Optional)</label>
-          <select id="project" name="project">
-            <option value="">Select project</option>
-            <!-- Options will be populated by JavaScript -->
-          </select>
-        </div>
-      </div>
 
-      <div class="checkbox-group">
-        <div class="checkbox-item">
-          <input type="checkbox" id="recurring" name="recurring">
-          <label for="recurring">Recurring Donation</label>
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <input type="checkbox" id="recurring" name="recurring">
+            <label for="recurring">Recurring Donation</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="taxReceipt" name="taxReceipt">
+            <label for="taxReceipt">Tax Receipt Sent</label>
+          </div>
         </div>
-        <div class="checkbox-item">
-          <input type="checkbox" id="taxReceipt" name="taxReceipt">
-          <label for="taxReceipt">Tax Receipt Sent</label>
+
+        <div class="form-row full-width">
+          <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="4" placeholder="Additional notes or comments"></textarea>
+          </div>
         </div>
-      </div>
 
-      <div class="form-row full-width">
-        <label for="notes">Notes</label>
-        <textarea id="notes" name="notes" rows="4"></textarea>
-      </div>
-
-      <div class="form-actions">
-        <button type="button" class="btn cancel-btn" onclick="closeDonationForm()">Cancel</button>
-        <button type="submit" class="btn record-btn">Record</button>
-      </div>
-    </form>
+        <div class="form-actions">
+          <button type="button" class="btn cancel-btn" onclick="closeDonationForm()">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn record-btn">
+            <i class="fas fa-check"></i> Record
+          </button>
+        </div>
+      </form>
   </div>
 </div>
 
 <script>
   function showAddDonationForm() {
-    document.getElementById('addDonationModal').style.display = 'block';
+    document.getElementById('addDonationModal').style.display = 'flex';
+    document.getElementById('addDonationModal').style.alignItems = 'center';
+    document.getElementById('addDonationModal').style.justifyContent = 'center';
     loadDonors();
     loadProjects();
     // Set default date to today
@@ -119,6 +141,8 @@
   function closeDonationForm() {
     document.getElementById('addDonationModal').style.display = 'none';
     document.getElementById('donationForm').reset();
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
   }
 
   function loadDonors() {
@@ -135,6 +159,9 @@
             select.appendChild(option);
           }
         });
+      })
+      .catch(err => {
+        console.error('Error loading donors:', err);
       });
   }
 
@@ -150,6 +177,9 @@
           option.textContent = project.name;
           select.appendChild(option);
         });
+      })
+      .catch(err => {
+        console.error('Error loading projects:', err);
       });
   }
 
@@ -157,8 +187,15 @@
   document.getElementById('donationForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="loading"></span> Recording...';
+    submitBtn.disabled = true;
+
     const formData = new FormData(this);
     const data = Object.fromEntries(formData);
+    data.recurring = document.getElementById('recurring').checked;
+    data.taxReceipt = document.getElementById('taxReceipt').checked;
 
     fetch('/api/add_donation', {
       method: 'POST',
@@ -169,45 +206,150 @@
     })
     .then(response => response.json())
     .then(result => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+      
       if (result.success) {
-        alert('Donation recorded successfully!');
+        if (typeof showNotification === 'function') {
+          showNotification('Donation recorded successfully!', 'success');
+        } else {
+          alert('Donation recorded successfully!');
+        }
         closeDonationForm();
-        // Refresh the donations list
         loadDonations();
+        // Trigger dashboard refresh
+        if (typeof triggerDashboardRefresh === 'function') {
+          triggerDashboardRefresh();
+        } else {
+          localStorage.setItem('dashboardRefresh', Date.now().toString());
+        }
       } else {
-        alert('Error recording donation: ' + result.message);
+        if (typeof showNotification === 'function') {
+          showNotification('Error: ' + result.message, 'error');
+        } else {
+          alert('Error recording donation: ' + result.message);
+        }
       }
     })
     .catch(error => {
       console.error('Error:', error);
-      alert('Error recording donation');
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+      if (typeof showNotification === 'function') {
+        showNotification('Error recording donation', 'error');
+      } else {
+        alert('Error recording donation');
+      }
     });
   });
 
   // Load donations summary and list
   function loadDonations() {
+    const container = document.getElementById('donationList');
+    container.innerHTML = '<div class="empty-box" style="min-height:300px;"><i class="fas fa-spinner fa-spin" style="font-size:32px; margin-bottom:16px;"></i><div>Loading donations...</div></div>';
+    
     fetch('/api/donations')
       .then(r => r.json())
       .then(list => {
-        const container = document.getElementById('donationList');
+        // Calculate statistics
+        let totalRaised = 0;
+        let thisMonthTotal = 0;
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        
+        list.forEach(donation => {
+          const amount = parseFloat(donation.amount) || 0;
+          totalRaised += amount;
+          
+          if (donation.donation_date) {
+            const donationDate = new Date(donation.donation_date);
+            if (donationDate.getMonth() === currentMonth && donationDate.getFullYear() === currentYear) {
+              thisMonthTotal += amount;
+            }
+          }
+        });
+
+        // Update statistics
+        if (document.getElementById('totalRaised')) {
+          animateCurrency('totalRaised', totalRaised, 800);
+        }
+        if (document.getElementById('thisMonth')) {
+          animateCurrency('thisMonth', thisMonthTotal, 800);
+        }
+        if (document.getElementById('countDonations')) {
+          animateNumber('countDonations', list.length, 800);
+        }
+
+        // Render donations list
         if (!list.length) {
-          container.innerHTML = '<div class="empty-box">No donations recorded</div>';
+          container.innerHTML = '<div class="empty-box" style="min-height:300px;"><i class="fas fa-donate" style="font-size:48px; opacity:0.3; margin-bottom:16px;"></i><div>No donations recorded</div></div>';
           return;
         }
-        // simple card list
-        container.innerHTML = list.map(d => `
-          <div style="background:white;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 6px 14px rgba(12,24,40,0.04);display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-weight:700">${d.donation_type || 'Donation'}</div>
-              <div style="color:var(--muted);font-size:13px">${d.donation_date} • ${d.notes || ''}</div>
-            </div>
-            <div style="font-weight:800;color:#10b981;">$${(d.amount||0).toFixed(2)}</div>
-          </div>
-        `).join('');
+
+        // Filter donations based on search
+        const searchQuery = document.getElementById('donorSearch').value.toLowerCase();
+        const filteredList = list.filter(d => {
+          if (!searchQuery) return true;
+          const amountStr = (d.amount || 0).toString();
+          return amountStr.includes(searchQuery) || 
+                 (d.donation_type && d.donation_type.toLowerCase().includes(searchQuery));
+        });
+
+        if (!filteredList.length) {
+          container.innerHTML = '<div class="empty-box" style="min-height:300px;"><div>No donations match your search</div></div>';
+          return;
+        }
+
+        container.innerHTML = `
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="padding:16px 20px; text-align:left; background:linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom:2px solid var(--border); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:1px;">Date</th>
+                <th style="padding:16px 20px; text-align:left; background:linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom:2px solid var(--border); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:1px;">Type</th>
+                <th style="padding:16px 20px; text-align:left; background:linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom:2px solid var(--border); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:1px;">Amount</th>
+                <th style="padding:16px 20px; text-align:left; background:linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom:2px solid var(--border); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:1px;">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredList.map((d, index) => {
+                const date = d.donation_date ? new Date(d.donation_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
+                const amount = parseFloat(d.amount) || 0;
+                return `
+                  <tr style="transition:var(--transition-fast); border-bottom:1px solid var(--border-light);">
+                    <td style="padding:16px 20px; color:var(--muted); font-size:14px;">${date}</td>
+                    <td style="padding:16px 20px;">
+                      <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:12px; background:#3b82f615; color:#3b82f6; font-weight:600; font-size:12px;">
+                        <i class="fas fa-${d.donation_type === 'Online' ? 'credit-card' : d.donation_type === 'Cash' ? 'money-bill' : d.donation_type === 'Cheque' ? 'file-invoice' : 'university'}"></i>
+                        ${d.donation_type || 'N/A'}
+                      </span>
+                    </td>
+                    <td style="padding:16px 20px;">
+                      <span style="font-weight:800; font-size:18px; color:#10b981;">
+                        $${amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                      </span>
+                    </td>
+                    <td style="padding:16px 20px; color:var(--muted); font-size:13px;">${d.notes || '-'}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+      })
+      .catch(err => {
+        console.error('Error loading donations:', err);
+        container.innerHTML = '<div class="empty-box" style="min-height:300px; color:var(--danger);">Error loading donations</div>';
       });
   }
 
+  // Search functionality
+  document.getElementById('donorSearch').addEventListener('input', function() {
+    loadDonations();
+  });
+
   // Load donations on page load
-  document.addEventListener('DOMContentLoaded', loadDonations);
+  document.addEventListener('DOMContentLoaded', function() {
+    loadDonations();
+  });
 </script>
 {% endblock %}
