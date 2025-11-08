@@ -51,7 +51,8 @@ CREATE TABLE donor (
     organization_name VARCHAR(100),
     address TEXT,
     total_donations DECIMAL(12,2) DEFAULT 0,
-    uri VARCHAR(255)
+    uri VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ==========================================================
@@ -67,7 +68,8 @@ CREATE TABLE beneficiary (
     address TEXT,
     need_description TEXT,
     status ENUM('Active', 'Completed', 'Pending') DEFAULT 'Active',
-    uri VARCHAR(255)
+    uri VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ==========================================================

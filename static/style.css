@@ -340,7 +340,7 @@ nav a:hover {
   background-color: #ffffff;
   border-radius: 16px;
   box-shadow: 0 25px 50px rgba(0,0,0,0.1);
-  max-width: 700px;
+  max-width: 500px;
   width: 100%;
   padding: 0;
   overflow: hidden;

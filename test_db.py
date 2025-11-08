@@ -43,6 +43,28 @@ try:
     else:
         print("uri column already exists in beneficiary table")
 
+    # Check if created_at column exists in donor table
+    cur.execute("DESCRIBE donor")
+    columns = cur.fetchall()
+    column_names = [col[0] for col in columns]
+    if 'created_at' not in column_names:
+        print("Adding created_at column to donor table...")
+        cur.execute("ALTER TABLE donor ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+        print("created_at column added to donor table")
+    else:
+        print("created_at column already exists in donor table")
+
+    # Check if created_at column exists in beneficiary table
+    cur.execute("DESCRIBE beneficiary")
+    columns = cur.fetchall()
+    column_names = [col[0] for col in columns]
+    if 'created_at' not in column_names:
+        print("Adding created_at column to beneficiary table...")
+        cur.execute("ALTER TABLE beneficiary ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+        print("created_at column added to beneficiary table")
+    else:
+        print("created_at column already exists in beneficiary table")
+
     cur.execute("SELECT 1")
     result = cur.fetchone()
     print(f"Test query result: {result}")

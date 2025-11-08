@@ -172,6 +172,37 @@ def api_donations_trend():
     # Ensure sequential months - frontend can handle missing months, but we'll return rows
     return json.loads(json.dumps(rows, cls=DecimalEncoder))
 
+@app.route('/api/recent_entries')
+def api_recent_entries():
+    """
+    Fetch recent form submissions from all tables: volunteers, donors, beneficiaries, events, donations.
+    Union them, sort by date, limit to 20.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT 'Volunteer' AS type, full_name AS name, join_date AS date
+        FROM volunteer
+        UNION ALL
+        SELECT 'Donor' AS type, full_name AS name, created_at AS date
+        FROM donor
+        UNION ALL
+        SELECT 'Beneficiary' AS type, full_name AS name, created_at AS date
+        FROM beneficiary
+        UNION ALL
+        SELECT 'Event' AS type, event_name AS name, event_date AS date
+        FROM event
+        UNION ALL
+        SELECT 'Donation' AS type, CONCAT(donation_type, ' - ', amount) AS name, donation_date AS date
+        FROM donation
+        ORDER BY date DESC
+        LIMIT 20;
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return json.loads(json.dumps(rows, cls=DecimalEncoder))
+
 # Simple search endpoints (optional)
 @app.route('/api/search/stakeholders')
 def api_search_stakeholders():

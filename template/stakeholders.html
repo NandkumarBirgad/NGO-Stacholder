@@ -58,22 +58,11 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email">
-        </div>
-        <div class="form-group">
-          <label for="phone">Phone</label>
-          <input type="tel" id="phone" name="phone">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
           <label for="type">Type *</label>
           <select id="type" name="type" required>
             <option value="volunteer">Volunteer</option>
             <option value="donor">Donor</option>
-            <option value="partner">Partner</option>
+            <option value="Beneficiary">Beneficiary</option>
           </select>
         </div>
         <div class="form-group">
@@ -82,6 +71,17 @@
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email">
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone">
         </div>
       </div>
 
@@ -121,11 +121,11 @@
 
   function closeAddStakeholderForm() {
     document.getElementById('addStakeholderModal').style.display = 'none';
-    document.getElementById('addStakeholderForm').reset();
+    document.getElementById('stakeholderForm').reset();
   }
 
   // Show/hide fields based on stakeholder type
-  document.getElementById('stakeholderType').addEventListener('change', function(e) {
+  document.getElementById('type').addEventListener('change', function(e) {
     const type = e.target.value;
     const statusGroup = document.getElementById('statusGroup');
     const joinDateGroup = document.getElementById('joinDateGroup');

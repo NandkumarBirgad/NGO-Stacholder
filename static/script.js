@@ -6,6 +6,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // If analytics chart canvas exists, load donation trend
   const donationCanvas = document.getElementById("donationTrend");
   if (donationCanvas) loadDonationTrend();
+
+  // Load recent entries if on dashboard
+  const recentEntriesEl = document.getElementById("recentEntries");
+  if (recentEntriesEl) loadRecentEntries();
 });
 
 function loadSummary() {
@@ -64,4 +68,28 @@ function renderDonationChart(labels, data) {
 function closeForm() {
   document.getElementById('addStakeholderModal').style.display = 'none';
   document.getElementById('stakeholderForm').reset();
+}
+
+function loadRecentEntries() {
+  fetch('/api/recent_entries')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('recentEntries');
+      if (!data.length) {
+        container.innerHTML = 'No recent entries';
+        return;
+      }
+      container.innerHTML = data.map(entry =>
+        `<div style="padding:8px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong>${entry.type}</strong>: ${entry.name}
+          </div>
+          <div style="color:#666; font-size:12px;">${new Date(entry.date).toLocaleDateString()}</div>
+        </div>`
+      ).join('');
+    })
+    .catch(err => {
+      console.error("Failed to load recent entries:", err);
+      document.getElementById('recentEntries').innerHTML = 'Error loading entries';
+    });
 }
