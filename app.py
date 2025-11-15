@@ -3,6 +3,7 @@ from flask import Flask, render_template, jsonify, request
 import decimal
 import json
 from datetime import date, datetime
+import ssl
 
 # ---------- JSON Helper ----------
 class DecimalEncoder(json.JSONEncoder):
@@ -18,13 +19,16 @@ app = Flask(__name__, template_folder='template', static_folder='static')
 
 # ---------- MySQL Connection (PyMySQL ONLY) ----------
 def get_db_connection():
+    ssl_context = ssl.create_default_context()
     return pymysql.connect(
         host='gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
         user='4MtRB8TtYgRCw9d.root',
-        port=4000,
+        port=int('4000'),
         password='PTcrp6v3lYMq6hJd',
         database='test',
-        cursorclass=pymysql.cursors.Cursor
+        # ADD THESE LINES TO ENABLE SSL CONNECTION
+        ssl_disabled=False,
+        ssl_context=ssl_context
     )
 
 # ---------- ROUTES ----------
