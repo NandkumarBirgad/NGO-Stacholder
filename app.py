@@ -1,8 +1,12 @@
+import pymysql
+
+pymysql.install_as_MySQLdb()
+
 from flask import Flask, render_template, jsonify, request
 from flask_mysqldb import MySQL
 import decimal
 import json
-import MySQLdb
+# import MySQLdb
 from datetime import date, datetime
 
 # Helper to convert Decimal and date to JSON serializable
@@ -23,10 +27,11 @@ mysql = MySQL(app)
 # Initialize MySQL connection
 def get_db_connection():
     return MySQLdb.connect(
-        host='localhost',
-        user='root',
-        password='sagar123',
-        database='ngo_management_system'
+        host='gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
+        user='4MtRB8TtYgRCw9d.root',
+        port='4000',
+        password='PTcrp6v3lYMq6hJd',
+        database='test'
     )
 
 @app.route('/')
