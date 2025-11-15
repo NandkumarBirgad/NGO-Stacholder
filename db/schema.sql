@@ -82,6 +82,7 @@ CREATE TABLE event (
     location VARCHAR(255),
     description TEXT,
     budget DECIMAL(10,2),
+    status ENUM('Planning', 'Active', 'Completed', 'On Hold') DEFAULT 'Planning',
     created_by INT,
     FOREIGN KEY (created_by) REFERENCES ngo_admin(admin_id)
         ON DELETE SET NULL

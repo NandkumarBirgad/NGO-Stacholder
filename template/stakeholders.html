@@ -6,21 +6,10 @@
     <div class="subtitle">Manage volunteers, donors, beneficiaries, and partners</div>
   </div>
   <div style="flex-shrink: 0 !important; display: block !important; visibility: visible !important; opacity: 1 !important;">
-    <button id="addStakeholderBtn" class="add-btn" onclick="if(typeof showAddStakeholderForm === 'function') { showAddStakeholderForm(); } else { alert('Function not loaded. Please refresh page.'); } return false;" type="button" style="background: #3b82f6 !important; background-image: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; color: #ffffff !important; display: inline-flex !important; visibility: visible !important; opacity: 1 !important; padding: 14px 24px !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 600 !important; font-size: 15px !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important; width: auto !important; height: auto !important; z-index: 100 !important; position: relative !important; align-items: center !important; gap: 8px !important;">
-      <i class="fas fa-plus"></i> 
-      <span>Add Stakeholder</span>
+    <button class="add-btn" onclick="showAddStakeholderForm(); return false;">
+      <i class="fas fa-plus"></i> Add Stakeholder
     </button>
   </div>
-</div>
-
-<div style="margin: 20px 0; padding: 16px; background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-  <div>
-    <strong style="color: #1e40af;">Quick Action:</strong>
-    <span style="color: #64748b; margin-left: 8px;">Click the button below to add a new stakeholder</span>
-  </div>
-  <button onclick="showAddStakeholderForm(); return false;" style="background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 15px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-    <i class="fas fa-plus"></i> Add Stakeholder
-  </button>
 </div>
 
 <div class="search-row">

@@ -32,6 +32,13 @@
 
 <div class="search-row" style="margin-top:14px;">
   <input type="search" id="donorSearch" placeholder="🔍 Search by donor name or amount..." />
+  <select id="typeFilter">
+    <option value="">All Types</option>
+    <option value="Online">Online</option>
+    <option value="Cash">Cash</option>
+    <option value="Cheque">Cheque</option>
+    <option value="BankTransfer">Bank Transfer</option>
+  </select>
 </div>
 
 <div id="donationList" class="table" style="padding:0;">
@@ -55,6 +62,7 @@
             <label for="donorName">Donor Name *</label>
             <select id="donorName" name="donorName" required>
               <option value="">Select donor</option>
+              <option value="doner">Donor</option>
             </select>
           </div>
           <div class="form-group">
@@ -141,6 +149,8 @@
   function closeDonationForm() {
     document.getElementById('addDonationModal').style.display = 'none';
     document.getElementById('donationForm').reset();
+    document.getElementById('donorSearch').value = '';
+    document.getElementById('typeFilter').value = '';
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('date').value = today;
   }
@@ -288,11 +298,14 @@
 
         // Filter donations based on search
         const searchQuery = document.getElementById('donorSearch').value.toLowerCase();
+        const typeFilter = document.getElementById('typeFilter').value;
         const filteredList = list.filter(d => {
-          if (!searchQuery) return true;
           const amountStr = (d.amount || 0).toString();
-          return amountStr.includes(searchQuery) || 
-                 (d.donation_type && d.donation_type.toLowerCase().includes(searchQuery));
+          const matchesSearch = !searchQuery ||
+            (d.donor_name && d.donor_name.toLowerCase().includes(searchQuery)) ||
+            amountStr.includes(searchQuery);
+          const matchesType = !typeFilter || d.donation_type === typeFilter;
+          return matchesSearch && matchesType;
         });
 
         if (!filteredList.length) {
@@ -304,6 +317,7 @@
           <table style="width:100%; border-collapse:collapse;">
             <thead>
               <tr>
+                <th style="padding:16px 20px; text-align:left; background:linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom:2px solid var(--border); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:1px;">Donor</th>
                 <th style="padding:16px 20px; text-align:left; background:linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom:2px solid var(--border); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:1px;">Date</th>
                 <th style="padding:16px 20px; text-align:left; background:linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom:2px solid var(--border); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:1px;">Type</th>
                 <th style="padding:16px 20px; text-align:left; background:linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom:2px solid var(--border); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:1px;">Amount</th>
@@ -316,6 +330,7 @@
                 const amount = parseFloat(d.amount) || 0;
                 return `
                   <tr style="transition:var(--transition-fast); border-bottom:1px solid var(--border-light);">
+                    <td style="padding:16px 20px; font-weight:600; color:#0f172a;">${d.donor_name || 'N/A'}</td>
                     <td style="padding:16px 20px; color:var(--muted); font-size:14px;">${date}</td>
                     <td style="padding:16px 20px;">
                       <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:12px; background:#3b82f615; color:#3b82f6; font-weight:600; font-size:12px;">
@@ -346,6 +361,7 @@
   document.getElementById('donorSearch').addEventListener('input', function() {
     loadDonations();
   });
+  document.getElementById('typeFilter').addEventListener('change', loadDonations);
 
   // Load donations on page load
   document.addEventListener('DOMContentLoaded', function() {
