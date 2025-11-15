@@ -39,30 +39,48 @@
 </div>
 
 <div class="grid-2">
-  <div class="card">
-    <h3><i class="fas fa-calendar-check" style="color: #06b6d4;"></i> Recent Activities</h3>
-    <div id="recentActivities" class="empty-box" style="height:200px; min-height:200px;">
-      <div style="text-align:center;">
-        <i class="fas fa-calendar-alt" style="font-size:48px; opacity:0.3; margin-bottom:16px;"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+
+  <!-- Active Projects -->
+  <div class="card dashboard-card">
+    <h3 class="card-title">
+      <i class="fas fa-tasks" style="color:#ef4444;"></i>
+      Active Projects
+    </h3>
+
+    <div id="activeProjectsList" class="card-content">
+      <div class="empty-state">
+        <i class="fas fa-folder-open empty-icon"></i>
+        <p>No active projects</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activities -->
+  <div class="card dashboard-card">
+    <h3 class="card-title">
+      <i class="fas fa-calendar-check" style="color:#06b6d4;"></i>
+      Recent Activities
+    </h3>
+
+    <div id="recentActivities" class="card-content">
+      <div class="empty-state">
+        <i class="fas fa-calendar-alt empty-icon"></i>
         <p>No recent activities</p>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <h3><i class="fas fa-tasks" style="color: #ef4444;"></i> Active Projects</h3>
-    <div id="activeProjectsList" class="empty-box" style="height:200px; min-height:200px;">
-      <div style="text-align:center;">
-        <i class="fas fa-folder-open" style="font-size:48px; opacity:0.3; margin-bottom:16px;"></i>
-        <p>No active projects</p>
-      </div>
-    </div>
-  </div>
 </div>
+
 
 <div class="card">
   <h3><i class="fas fa-history" style="color: #64748b;"></i> Recent Form Submissions</h3>
-  <div style="padding:8px 0; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+  <div style="padding:8px 0; margin-bottom:12px; display:flex; justify-content:space-between; align-items: center;">
     <small style="color:var(--muted);">Latest entries from all forms</small>
     <button id="refreshBtn" style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:14px; display:flex; align-items:center; gap:6px; padding:4px 8px; border-radius:6px; transition:var(--transition);" onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.background='none'">
       <i class="fas fa-sync-alt"></i> Refresh
