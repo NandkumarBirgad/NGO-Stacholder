@@ -154,12 +154,40 @@ def api_activities():
 def api_donations():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("""SELECT donation_id, donor_id, amount, donation_type, donation_date, notes
-                   FROM donation ORDER BY donation_date DESC LIMIT 100""")
+
+    cur.execute("""
+    SELECT 
+        d.donation_id,
+        d.donor_id,
+        donor.full_name AS donor_name,
+        d.amount,
+        d.donation_type,
+        d.donation_date,
+        d.notes
+    FROM donation d
+    LEFT JOIN donor ON d.donor_id = donor.donor_id
+    ORDER BY d.donation_date DESC
+    LIMIT 100
+""")
+
+
     rows = cur.fetchall()
     cur.close()
     conn.close()
-    return json.loads(json.dumps(rows, cls=DecimalEncoder))
+    donations = []
+    for r in rows:
+     donations.append({
+        "donation_id": r[0],
+        "donor_id": r[1],
+        "donor_name": r[2],         # 🔥 FIXED
+        "amount": float(r[3]) if r[3] else 0,
+        "donation_type": r[4],
+        "donation_date": r[5].isoformat() if r[5] else None,
+        "notes": r[6]
+    })
+
+
+    return jsonify(donations)
 
 @app.route('/api/add_donation', methods=['POST'])
 def api_add_donation():
@@ -182,7 +210,7 @@ def api_add_donation():
         cur.execute("""
             INSERT INTO donation (donor_id, amount, donation_type, donation_date, notes)
             VALUES (%s, %s, %s, %s, %s)
-        """, (donor_id, amount, payment_method, donation_date, notes))
+        """, (donor_id,amount, payment_method, donation_date, notes))
 
         conn.commit()
         cur.close()
@@ -216,42 +244,60 @@ def api_donations_trend():
     conn.close()
     # Ensure sequential months - frontend can handle missing months, but we'll return rows
     return json.loads(json.dumps(rows, cls=DecimalEncoder))
-
 @app.route('/api/recent_entries')
 def api_recent_entries():
-    """
-    Fetch recent form submissions from all tables: volunteers, donors, beneficiaries, events, donations.
-    Union them, sort by date, limit to 20.
-    """
     conn = get_db_connection()
     cur = conn.cursor()
+
     cur.execute("""
         SELECT 'Volunteer' AS type, full_name AS name, join_date AS date
         FROM volunteer
         WHERE join_date IS NOT NULL AND full_name IS NOT NULL
+        
         UNION ALL
+        
         SELECT 'Donor' AS type, full_name AS name, created_at AS date
         FROM donor
         WHERE created_at IS NOT NULL AND full_name IS NOT NULL
+        
         UNION ALL
+        
         SELECT 'Beneficiary' AS type, full_name AS name, created_at AS date
         FROM beneficiary
         WHERE created_at IS NOT NULL AND full_name IS NOT NULL
+        
         UNION ALL
+        
         SELECT 'Event' AS type, event_name AS name, event_date AS date
         FROM event
         WHERE event_date IS NOT NULL AND event_name IS NOT NULL
+        
         UNION ALL
-        SELECT 'Donation' AS type, CONCAT(COALESCE(donation_type, 'Unknown'), ' - $', COALESCE(amount, 0)) AS name, donation_date AS date
+        
+        SELECT 'Donation' AS type, 
+               CONCAT(COALESCE(donation_type, 'Unknown'), ' - $', COALESCE(amount, 0)) AS name, 
+               donation_date AS date
         FROM donation
         WHERE donation_date IS NOT NULL
+        
         ORDER BY date DESC
-        LIMIT 20;
+        LIMIT 20
     """)
+
     rows = cur.fetchall()
     cur.close()
     conn.close()
-    return json.loads(json.dumps(rows, cls=DecimalEncoder))
+
+    # Convert each row (tuple) → dict
+    recent_entries = []
+    for r in rows:
+        recent_entries.append({
+            "type": r[0],
+            "name": r[1],
+            "date": r[2].isoformat() if r[2] else None
+        })
+
+    return jsonify(recent_entries)
 
 @app.route('/api/total_counts')
 def api_total_counts():
