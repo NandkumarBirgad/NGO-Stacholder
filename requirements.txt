@@ -1,10 +1,5 @@
-# requirements.txt
-Flask
-Flask-Mail
-Flask-Cors
-pymysql
-requests
-firebase-admin
+flask
+flask-cors
 gunicorn
 firebase-admin
-mysql-connector-pythongit add requirements.txt
+mysql-connector-python
