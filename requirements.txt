@@ -5,3 +5,6 @@ Flask-Cors
 pymysql
 requests
 firebase-admin
+gunicorn
+firebase-admin
+mysql-connector-pythongit add requirements.txt
