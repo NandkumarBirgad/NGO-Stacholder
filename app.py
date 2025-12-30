@@ -1,5 +1,6 @@
 import os
 import json
+import pymysql
 import decimal
 import logging
 from datetime import date, datetime
@@ -22,10 +23,11 @@ from firebase_admin import credentials, auth, firestore
 # -------------------------
 # CONFIG
 # -------------------------
-DB_HOST = "localhost"
-DB_USER = "root"
-DB_PASS = "sagar123"
-DB_NAME = "ngo_management_system"
+DB_HOST = os.getenv("DB_HOST")
+DB_USER = os.getenv("DB_USER")
+DB_PASS = os.getenv("DB_PASS")
+DB_NAME = os.getenv("DB_NAME")
+
 
 # Firebase Web API Key (for REST signInWithPassword)
 FIREBASE_WEB_API_KEY = "AIzaSyAnJssmodtiYIfmmalhvtug7IjncXVedhI"  # <-- replace if needed
@@ -79,16 +81,20 @@ def get_db_connection():
 # -------------------------
 firestore_db = None
 try:
-    cred_path = "serviceAccountKey.json"
-    if not os.path.exists(cred_path):
-        raise FileNotFoundError("serviceAccountKey.json not found in project root.")
-    cred = credentials.Certificate(cred_path)
+    firebase_json = os.getenv("FIREBASE_KEY_JSON")
+
+    if not firebase_json:
+        raise RuntimeError("FIREBASE_KEY_JSON environment variable not set")
+
+    cred = credentials.Certificate(json.loads(firebase_json))
     firebase_admin.initialize_app(cred)
     firestore_db = firestore.client()
-    logging.info("Firebase Admin initialized and Firestore client ready.")
+
+    logging.info("Firebase Admin initialized using ENV JSON.")
 except Exception as e:
     logging.error("Firebase initialization failed: %s", e)
     firestore_db = None
+
 
 # -------------------------
 # Serve uploaded image (local path)
