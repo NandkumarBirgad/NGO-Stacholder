@@ -3,3 +3,4 @@ flask-cors
 gunicorn
 firebase-admin
 mysql-connector-python
+pymysql
