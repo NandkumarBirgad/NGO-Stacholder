@@ -1,0 +1,7 @@
+# requirements.txt
+Flask
+Flask-Mail
+Flask-Cors
+pymysql
+requests
+firebase-admin

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NGO Login</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #2e58cc, #274fae);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .container {
+        width: 380px;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 30px;
+        border-radius: 15px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+        text-align: center;
+        color: white;
+        margin-bottom: 25px;
+        font-size: 28px;
+        font-weight: 600;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: none;
+        border-radius: 8px;
+        outline: none;
+        font-size: 15px;
+    }
+
+    .role-box {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+
+    .role-btn {
+        width: 32%;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: 0.3s;
+    }
+
+    .role-btn:hover {
+        background: #0b3d22;
+    }
+
+    .selected {
+        background: #0b3d22 !important;
+        font-weight: bold;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 12px;
+        background: #14295a;
+        border: none;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: 0.3s;
+    }
+
+    .btn:hover {
+        background: #0b3d22;
+    }
+
+    .link {
+        margin-top: 15px;
+        text-align: center;
+        color: white;
+        font-size: 14px;
+    }
+
+    .link a {
+        color: #032e1a;
+        font-weight: bold;
+        text-decoration: none;
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h2>NGO Login</h2>
+
+    <form action="/login" method="POST">
+
+        <!-- Email & Password -->
+        <input type="email" name="email" placeholder="Enter email" required autocomplete="email">
+        <input type="password" name="password" placeholder="Enter password" required autocomplete="current-password">
+
+        <!-- Role Selection -->
+        <!-- Removed role selection buttons for login form to match backend flow -->
+       
+       
+
+        <input type="hidden" name="role" id="roleInput" required>
+        
+
+        <!-- Login Button -->
+        <button class="btn" type="submit">Login</button>
+
+        <div class="link">
+            New user? <a href="/register">Create an account</a>
+        </div>
+    </form>
+</div>
+
+<!-- Removed selectRole script since role selection removed -->
+
+<script>
+    function selectRole(role, el) {
+        document.getElementById("roleInput").value = role;
+
+        // Remove previous selected
+        document.querySelectorAll(".role-btn").forEach(btn => btn.classList.remove("selected"));
+
+        // Add selected class
+        el.classList.add("selected");
+    }
+</script>
+
+
+</body>
+</html>

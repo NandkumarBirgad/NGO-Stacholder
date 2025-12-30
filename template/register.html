@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NGO Registration</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #2e58cc, #274fae);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .container {
+        width: 420px;
+        background: rgba(255,255,255,0.12);
+        padding: 30px;
+        border-radius: 18px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(25px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+        text-align: center;
+        color: white;
+        margin-bottom: 25px;
+        font-size: 30px;
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: none;
+        border-radius: 10px;
+        outline: none;
+        background: rgba(255,255,255,0.85);
+        font-size: 15px;
+    }
+
+    .roles {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .role-btn {
+        width: 32%;
+        padding: 12px;
+        background: rgba(255,255,255,0.25);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.3s;
+    }
+
+    .role-btn:hover {
+        background: rgba(0,0,0,0.4);
+    }
+
+    .selected {
+        background: #0b3d22 !important;
+        font-weight: bold;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 12px;
+       background: #14295a;
+        border: none;
+        color: white;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 17px;
+        transition: 0.3s;
+    }
+
+    .btn:hover {
+        background: #062015;
+    }
+
+    .link {
+        margin-top: 12px;
+        text-align: center;
+        color: white;
+        font-size: 15px;
+    }
+
+    .link a {
+        color: #022e18;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Create New Account</h2>
+
+    <form action="/register" method="POST">
+
+        <input type="text" name="username" placeholder="Enter your name" required>
+        <input type="email" name="email" placeholder="Enter email address" required >
+        <input type="password" name="password" placeholder="Create password" required>
+
+        <div class="roles">
+            <button type="button" class="role-btn" onclick="selectRole('donor', this)">Donor</button>
+            <button type="button" class="role-btn" onclick="selectRole('volunteer', this)">Volunteer</button>
+        </div>
+
+        <input type="hidden" id="roleInput" name="role" required>
+
+        <button class="btn" type="submit">Register</button>
+
+        <div class="link">
+            Already have an account? <a href="/login">Login</a>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    function selectRole(role, element) {
+        document.getElementById("roleInput").value = role;
+
+        let buttons = document.querySelectorAll(".role-btn");
+        buttons.forEach(btn => btn.classList.remove("selected"));
+
+        element.classList.add("selected");
+    }
+
+    document.querySelector("form").addEventListener("submit", function(e) {
+        let role = document.getElementById("roleInput").value;
+
+        if (!role) {
+            alert("Please select a role: Donor, Volunteer, or Beneficiary.");
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
+
+
+
+</body>
+</html>

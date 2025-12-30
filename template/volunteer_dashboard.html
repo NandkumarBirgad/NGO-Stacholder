@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Volunteer Dashboard</title>
+</head>
+<body>
+    {% extends "base.html" %}
+    {% block sidebar %}
+<aside class="sidebar">
+    <div>
+        <div class="brand">
+            <div class="logo">N</div>
+            <div>
+                <h2>NGO Manager</h2>
+                <p></p>
+            </div>
+        </div>
+        <nav>
+            <a href="/volunteer-dashboard" id="nav-dashboard">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/activities" id="nav-activities">
+                <span class="nav-icon"><i class="fas fa-calendar-alt"></i></span>
+                <span>My Activities</span>
+            </a>
+            <!-- <a href="/projects" id="nav-projects">
+                <span class="nav-icon"><i class="fas fa-folder-open"></i></span>
+                <span>Projects</span>
+            </a> -->  
+        </nav>
+    </div>
+    <div class="user">
+        <div class="avatar">V</div>
+        <div>
+            <div style="font-weight:700; font-size:14px;">{{ username }}</div>
+            <div style="font-size:12px; opacity:0.8;">Volunteer</div>
+        </div>
+    </div>
+</aside>
+{% endblock %}
+    {% block content %}
+    <div class="page-title">
+      <div>
+        <h1>Volunteer Dashboard</h1>
+        <div class="subtitle">Welcome back, <strong>{{ username }}</strong>! Here is your activity summary and schedule.</div>
+      </div>
+    </div>
+    
+    <div class="cards" style="margin-top: 20px;">
+      <div class="card">
+        <h3>Total Hours Volunteered</h3>
+        <p id="totalHours">0</p>
+      </div>
+      <div class="card">
+        <h3>Upcoming Activities</h3>
+        <p id="upcomingActivities">0</p>
+      </div>
+    </div>
+    
+    <div class="card" style="margin-top: 40px;">
+      <h3>Your Recent Activities</h3>
+      <div id="activitiesList" style="max-height: 300px; overflow-y: auto; padding-top: 8px;">
+        <div class="empty-box" style="min-height: 150px;">
+          <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 12px;"></i>
+          <p>Loading your activities...</p>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        loadVolunteerSummary();
+        loadVolunteerActivities();
+      });
+    
+      function loadVolunteerSummary() {
+        fetch('/api/volunteer/summary')
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) {
+              document.getElementById('totalHours').textContent = 'N/A';
+              document.getElementById('upcomingActivities').textContent = 'N/A';
+              return;
+            }
+            document.getElementById('totalHours').textContent = data.totalHours || 0;
+            document.getElementById('upcomingActivities').textContent = data.upcomingActivities || 0;
+          })
+          .catch(() => {
+            document.getElementById('totalHours').textContent = 'Error';
+            document.getElementById('upcomingActivities').textContent = 'Error';
+          });
+      }
+    
+      function loadVolunteerActivities() {
+        fetch('/api/volunteer/activities')
+          .then(response => response.json())
+          .then(data => {
+            const container = document.getElementById('activitiesList');
+            if (!data || data.length === 0) {
+              container.innerHTML = '<p>You have not participated in any activities yet.</p>';
+              return;
+            }
+            container.innerHTML = '<table style="width: 100%; border-collapse: collapse;">' +
+              '<thead><tr><th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd;">Date</th>' +
+              '<th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd;">Activity</th>' +
+              '<th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd;">Hours</th>' +
+              '<th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd;">Notes</th></tr></thead><tbody>';
+    
+            data.forEach(activity => {
+              const dateStr = new Date(activity.date).toLocaleDateString();
+              const hoursStr = activity.hours || 0;
+              const activityStr = activity.name || '';
+              const notesStr = activity.notes || '';
+              container.innerHTML += `<tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #eee;">${dateStr}</td>
+                  <td style="padding: 8px; border-bottom: 1px solid #eee;">${activityStr}</td>
+                  <td style="padding: 8px; border-bottom: 1px solid #eee;">${hoursStr}</td>
+                  <td style="padding: 8px; border-bottom: 1px solid #eee;">${notesStr}</td>
+                </tr>`;
+            });
+    
+            container.innerHTML += '</tbody></table>';
+          })
+          .catch(() => {
+            document.getElementById('activitiesList').innerHTML = '<p>Error loading activities.</p>';
+          });
+      }
+    </script>
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block sidebar %}
+<aside class="sidebar">
+    <div>
+        <div class="brand">
+            <div class="logo">N</div>
+            <div>
+                <h2>NGO Manager</h2>
+                <p></p>
+            </div>
+        </div>
+        <nav>
+            <a href="/donor-dashboard" id="nav-dashboard">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/donations" id="nav-donations">
+                <span class="nav-icon"><i class="fas fa-donate"></i></span>
+                <span>Total Donations</span>
+            </a>
+            <!-- <a href="/projects" id="nav-projects">
+                <span class="nav-icon"><i class="fas fa-folder-open"></i></span>
+                <span>Projects</span>
+            </a> -->
+        </nav>
+    </div>
+    <div class="user">
+        <div class="avatar">Donor</div>
+        <div>
+            <div style="font-weight:700; font-size:14px;">{{ username }}</div>
+            <div style="font-size:12px; opacity:0.8;">Donor</div>
+        </div>
+    </div>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="page-title">
+  <div>
+    <h1>Donor Dashboard</h1>
+    <div class="subtitle">Welcome back, <strong>{{ username }}</strong>! Here is your donation summary and history.</div>
+  </div>
+</div>
+
+<div class="cards donor-summary-cards" style="margin-top: 20px;">
+  <div class="card">
+    <h3>Total Donations</h3>
+    <p id="totalDonations">₹0.00</p>
+  </div>
+  <div class="card">
+    <h3>Number of Donations</h3>
+    <p id="donationCount">0</p>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 40px;">
+  <h3>Your Recent Donations</h3>
+  <div id="donationsList" style="max-height: 300px; overflow-y: auto; padding-top: 8px;">
+    <div class="empty-box" style="min-height: 150px;">
+      <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 12px;"></i>
+      <p>Loading your donations...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    loadDonorSummary();
+    loadDonorDonations();
+  });
+
+  function loadDonorSummary() {
+    fetch('/api/donor/summary')
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          document.getElementById('totalDonations').textContent = 'N/A';
+          document.getElementById('donationCount').textContent = 'N/A';
+          return;
+        }
+        document.getElementById('totalDonations').textContent = '$' + parseFloat(data.totalDonated).toFixed(2);
+        document.getElementById('donationCount').textContent = data.donationCount;
+      })
+      .catch(() => {
+        document.getElementById('totalDonations').textContent = 'Error';
+        document.getElementById('donationCount').textContent = 'Error';
+      });
+  }
+
+  function loadDonorDonations() {
+    fetch('/api/donor/donations')
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById('donationsList');
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p>You have not made any donations yet.</p>';
+          return;
+        }
+        container.innerHTML = '<table style="width: 100%; border-collapse: collapse;">' +
+          '<thead><tr><th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd;">Date</th>' +
+          '<th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd;">Amount</th>' +
+          '<th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd;">Type</th>' +
+          '<th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd;">Notes</th></tr></thead><tbody>';
+
+        data.forEach(donation => {
+          const dateStr = new Date(donation.donation_date).toLocaleDateString();
+          const amountStr = '$' + parseFloat(donation.amount).toFixed(2);
+          const typeStr = donation.donation_type || '';
+          const notesStr = donation.notes || '';
+          container.innerHTML += `<tr>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">${dateStr}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">${amountStr}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">${typeStr}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">${notesStr}</td>
+            </tr>`;
+        });
+
+        container.innerHTML += '</tbody></table>';
+      })
+      .catch(() => {
+        document.getElementById('donationsList').innerHTML = '<p>Error loading donations.</p>';
+      });
+  }
+</script>
+{% endblock %}
