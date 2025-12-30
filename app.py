@@ -72,6 +72,7 @@ def get_db_connection():
         user=DB_USER,
         password=DB_PASS,
         database=DB_NAME,
+        port=DB_PORT,
         cursorclass=pymysql.cursors.DictCursor,
         autocommit=False
     )
